@@ -1,0 +1,156 @@
+
+body {
+    font-family: sans-serif;
+}
+
+.main {
+    border: 1px solid black;
+    box-shadow: 10px 10px 5px #888;
+    border-radius: 12px;
+    padding: 20px;
+    background-color: #ddd;
+    width: 800px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
+.container {
+    -webkit-perspective: 300;
+    perspective: 300;
+}
+
+#canvas1 {
+    border-style: solid;
+    border-width: 2px;
+    background-color: #0B2161;
+}
+
+.center {
+    float: left;
+    margin-left: 10px;
+}
+
+#btnFireL {
+    height:110px;
+    width:200px;
+    float:left;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    font-weight: bolder;
+}
+
+#btnFireR {
+    height:110px;
+    width:200px;
+    float:right;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    font-weight:bolder;
+}
+
+.controlPanel {
+    margin-top:0;
+    padding-top:0;
+    height:80px;
+    width:805px;
+    padding-left:0;
+}
+
+.center {
+    width: 300px;
+}
+
+#score {
+    clear: both;
+}
+
+.leftColumnConsole {
+    float: left;
+}
+
+.rightColumnConsole {
+    float: right;
+}
+
+.consoleValue {
+    font-weight: bolder;
+    font-size: 16pt;
+}
+
+#message {
+    clear: both;
+}
+
+#btnRestart {
+    height: 50px;
+    width: 100px;
+}
+
+#btnOptions {
+    clear: both;
+}
+
+.invisible {
+    display:none;
+}
+
+#dlgOptions {
+    display:none;
+}
+
+.ui-dialog-osx {
+    -moz-border-radius: 0 0 8px 8px;
+    -webkit-border-radius: 0 0 8px 8px;
+    border-radius: 0 0 8px 8px; border-width: 0 8px 8px 8px;
+}
+
+#cbxSound {
+    height: 40px;
+    width: 40px;
+}
+
+.dlgLabel {
+    font-size: 20pt;
+}
+
+.gh-sharing-center {
+    margin-left: auto;
+    margin-right: auto;
+    width: 400px;
+}
+
+#gh-sharing {
+    width: 100%;
+}
+
+.mailLink {
+    height: 40px;
+    width: 60px;
+    margin-left: 30px;
+    padding-top: 5px;
+}
+
+.listImage {
+    height:60px;
+    width: 50px;
+}
+
+.textLogo {
+    font-family: Arial, Arial, Helvetica, sans-serif;
+    font-size: 2em;
+    color: saddlebrown;
+}
+.imageLogo {
+    height: 2em;
+    width: 2em;
+}
+
+.startText {
+    margin-left: 150px;
+}
+
+#mainImage {
+    height: 70%; width: 70%
+}

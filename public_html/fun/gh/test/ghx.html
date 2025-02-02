@@ -1,0 +1,283 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="language" content="en-us" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <!--<meta name="viewport" content="width=320; initial-scale=0.60; user-scalable=no" />-->
+    <meta id="viewport" name="viewport" content="minimal-ui" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="game, HTML5, free, ghosts, shooting, arcade, intelligent agents" />
+    <meta name="description" content="Play this free game against virtual enemies that are all around you.
+            Your mobile device is the camera into the ghost world.
+            This is an HTML5 game and runs safely in your browser sandbox." />
+    <meta name="author" content="Tony Marius" />
+    <meta name="copyright" content="&copy; 2014 Tony Marius. All rights reserved." />
+    <meta name="rating" content="General" />
+    <meta name="robots" content="index, follow" />
+    <meta name="creator" content="Tony Marius" />
+    <meta name="publisher" content="T-gents" />
+
+    <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../images/game-ghost.png" />
+
+    <script>
+        if (/mobi/i.test(navigator.userAgent) && !location.hash) {
+            if (/Chrome/i.test(navigator.userAgent)) {  // Chrome/Android
+                var vp = document.getElementById('viewport');
+                vp.setAttribute('content', 'width=320; initial-scale=0.60; user-scalable=no');
+            }
+        }
+    </script>
+
+    <title>Get those Ghosts</title>
+
+    <link rel="stylesheet" href="../styles/gh-main.css"  type="text/css" />
+
+
+</head>
+<body id="body">
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.0";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<div id="main" class="main">
+    <div>1.0.0.17.7</div>
+    <canvas id="canvas1" width="800" height="360"></canvas>
+    <menu id="controlPanel" class="controlPanel">
+        <div id="divFire">
+            <canvas id="btnFireL"></canvas>
+            <div class="center">
+                <div id="level">
+                    <span class="leftColumnConsole">Level <span id="levelValue" class="consoleValue"></span></span>
+                    <span class="rightColumnConsole">Enemies <span id="enemiesValue" class="consoleValue"></span></span>
+                </div>
+                <div id="score">
+                    <span class="leftColumnConsole">Score <span id="scoreValue" class="consoleValue"></span></span>
+                    <span class="rightColumnConsole">Time <span id="timerValue" class="consoleValue"></span></span>
+                </div>
+                <div id="message">
+                    <div class="leftColumnConsole">
+                        <div id="messageValue" class="consoleValue"></div>
+                        <button id="btnOptions" type="button" class="invisible">Options</button>
+                    </div>
+                    <span class="rightColumnConsole"><button id="btnRestart" type="button" class="invisible">Restart</button></span>
+                </div>
+            </div>
+            <canvas id="btnFireR"></canvas>
+        </div>
+    </menu>
+</div>
+
+<script>
+
+    var cvs = document.getElementById("canvas1");
+    if (cvs.getContext) {
+// Specify 2d canvas type.
+        var ctxPre = cvs.getContext("2d");
+        ctxPre.font = "bold 24pt Courier";
+        ctxPre.fillStyle = "white";
+        ctxPre.fillText("Loading...",200,200);
+    }
+
+</script>
+
+<br style="clear:both;"/>
+<div id="gh-sharing" class="invisible">
+    <div id="gh-sharing-links" class="gh-sharing-center">
+        <table>
+            <tr>
+                <td><g:plusone></g:plusone></td>
+                <td>
+                    <a href="https://twitter.com/intent/tweet?hashtags=GetThoseGhosts,T-gents" class="twitter-share-button" data-lang="en" data-related="funhouse_kiuansoft">Tweet</a>
+                </td>
+                <td><div class="fb-like" data-href="http://funhouse.kiuansoft.com/gh/prod/gh.html/" data-layout="button_count" data-action="like" data-show-faces="true" data-share="false"></div></td>
+                <td>
+                    <script language="JavaScript">
+                        var ref = location.href;
+                        document.write('<a href="mailto:?subject=Get those Ghosts&body=' + ref + '"><img class="mailLink" src="../images/Anonymous_Mail_1_icon.png" alt="Share by Mail"/></a>');
+                    </script>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div id="console" class="invisible"></div>
+
+<div id="dlgOptions" title="Options">
+    <div id="divSponsor">
+        Powered by <span class="logo"><img class="imageLogo" src="../images/man_wearing_hat_silhouette.png" /><span class="textLogo">T-gents</span></span> and <a href="http://www.kiuansoft.com">Kiuansoft</a><br/>
+        Tony Marius and Paul Parrone<br/><br/>
+        <a href="mailto:funhouse@kiuansoft.com?Subject=Support" target="_top">Contact us</a><br/><br/>
+    </div>
+    <div id="divSound">
+        <input id="cbxSound" name="cbxSound" type="checkbox"/> <span class="dlgLabel">Sound</span>
+    </div>
+    <section id="helpSection">
+        <a href="#" class="aInstructions">Instructions</a>
+    </section>
+</div>
+
+<div id="startPage" class="invisible">
+    <figure id="divMainImage">
+        <img id="mainImage" alt="Loading..." />
+    </figure>
+    <section id="infoSection">
+		<span class="logoContainer">
+			Powered by <span class="logo"><img class="imageLogo" src="../images/man_wearing_hat_silhouette.png" /><span class="textLogo">T-gents</span></span>
+		</span>
+        <span class="startText">Press start or read <a href="#" class="aInstructions">Instructions</a></span>
+    </section>
+</div>
+
+<section id="helpPage" class="invisible">
+    <section id="instructions">
+        <h3>Instructions</h3>
+        <br/>
+        <p>Move device until enemy is in target and fire one of the buttons.  You can pan left, right, up and down.</p>
+        <p>To move up to the next level you must destroy all the enemies before the time runs out. There is less time to destroy the enemies as you move up in levels.</p>
+        <p>There are more points for shooting enemies that are far away or have a bonus sign.  The bonus is 500 to 1500 points based on distance.
+            There is an additional 750 bonus points if the enemy with a bonus is the last one destroyed on a level.</p>
+        <!--
+        <p> How to play video
+            <video width="320" height="240" controls>
+                <source src="../videos/gh_how_to_play.mov" type="video/quicktime">
+                Your browser does not support the video tag.
+            </video>
+        </p>
+        -->
+
+        <h4>Points</h4>
+        <table id="scoringChart" border="1px solid black" width="400px">
+            <tr>
+                <th>Enemy</th>
+                <th>Close</th>
+                <th>Near</th>
+                <th>Far</th>
+            </tr>
+            <tr>
+                <td><img src="../images/game-ghost.png" class="listImage"/></td>
+                <td>300</td>
+                <td>600</td>
+                <td>900</td>
+            </tr>
+            <tr>
+                <td><img src="../images/ghost-near.png" class="listImage"/></td>
+                <td>100</td>
+                <td>200</td>
+                <td>300</td>
+            </tr>
+            <tr>
+                <td><img src="../images/game-ghost3.png" class="listImage"/></td>
+                <td>200</td>
+                <td>400</td>
+                <td>600</td>
+            </tr>
+            <tr>
+                <td><img src="../images/Grim_Reaper.png" class="listImage"/></td>
+                <td>200</td>
+                <td>400</td>
+                <td>600</td>
+            </tr>
+            <tr>
+                <td><img src="../images/little-octopus.png" class="listImage"/></td>
+                <td>150</td>
+                <td>300</td>
+                <td>450</td>
+            </tr>
+            <tr>
+                <td><img src="../images/black_bomb.png" class="listImage"/></td>
+                <td>wipes out 1000 points</td>
+                <td>wipes out 1000 points</td>
+                <td>wipes out 1000 points</td>
+            </tr>
+        </table>
+
+        <p>
+            This game is optimized for iOS environment but may work in some Android devices.
+            It requires a device with a gyroscope and plenty of room to pan left and right.
+        </p>
+
+        <p>
+            Attributions
+        <ul id="attributions">
+            <li>videos and graphic art: Brittany Marius</li>
+            <li>enemies: <a href="http://openclipart.org">OpenClipart</a></li>
+            <li>background: <a href="http://all-free-download.com/free-photos/sea_ocean_water_238526.html">All-Free-Download.com</a></li>
+            <li>music: <a href="http://www.basslessons.be/drumloops.php">Free Drum Loops</a></li>
+        </ul>
+        </p>
+
+        <p>
+            <a href="mailto:funhouse@kiuansoft.com?Subject=Comments" target="_top">Send feedback</a>
+        </p>
+
+    </section>
+</section>
+<div id="gh-announcement" class="invisible" >
+    <p>Tell your friends about the game with the links below.</p>
+    <p>This window will automatically close in a few seconds.</p>
+    <p>Thanks from <span class="logo"><img class="imageLogo" src="../images/man_wearing_hat_silhouette.png" /><span class="textLogo">T-gents</span></span></p>
+</div>
+
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+
+<script src="../js/jquery/1.11.0/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+
+
+<!-- sharing section (start) -->
+
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<script type="text/javascript">
+    window.___gcfg = {
+        lang: 'en-US',
+        parsetags: 'onload'
+    };
+    (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+</script>
+
+<!-- sharing section (end) -->
+
+<script type="text/javascript" src="../js/lib/tm-toolbox-min.js"></script>
+<script type="text/javascript" src="../js/lib/tm-agent-base-min.js"></script>
+<script type="text/javascript" src="../js/lib/tm-vicinity-min.js"></script>
+
+<script type="text/javascript" src="../js/lib/behaviors/animation/basic-animation-behavior.js"></script>
+<script type="text/javascript" src="../js/lib/behaviors/animation/basic-mad-animation-behavior.js"></script>
+
+<script type="text/javascript" src="../js/lib/game/gh-main-test.js"></script>
+
+</body>
+</html>
+
+<script>
+
+    /* fake */
+    var Audio = function() {
+        this.addEventListener = function() {}
+        this.play = function() {}
+    }
+
+    $(document).ready(function() {
+        // replace music for testing
+        GhostHunterGame.prototype.startMusic = function () {
+
+        }
+
+    });
+
+</script>

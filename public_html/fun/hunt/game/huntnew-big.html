@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>rrrr</title>  
+<!--This sets the baseUrl to the "scripts" directory, and
+    loads a script that will have a module ID of 'main'-->
+<script type="text/javascript" src="../js/jquery/1.11.0/jquery.min.js"></script>
+<script type="text/javascript" src="../js/log4javascript.js"></script>
+<script type="text/javascript" src="../js/lib/t-gents/tm-toolbox.js"></script>
+<script type="text/javascript" src="../js/lib/t-gents/tm-agent-base.js"></script>
+<script type="text/javascript" src="../js/lib/t-gents/tm-vicinity.js"></script>
+
+<script type="text/javascript" src="../js/lib/behaviors/navigation/navigate-maze-low-vision-behavior-new.js"></script>
+<script type="text/javascript" src="../js/lib/behaviors/navigation/navigate-maze-low-vision-behavior-right.js"></script>
+
+<style>
+
+</style>
+</head>
+<body>
+    <div id="responseArea"></div>
+	<br/>
+	<br/>
+	<canvas id="cvs" ></canvas>
+	<br/>
+	<br/>
+	<div id="messageArea"></div>
+	<!--<button onclick="worker2.postMessage(new WorkerMessage('stop', null))">Stop</button>-->
+
+<script type="text/javascript">
+    var log = log4javascript.getDefaultLogger();
+    // Create a PopUpAppender with default options
+    var popUpAppender = new log4javascript.PopUpAppender();
+
+    // Change the desired configuration options
+    popUpAppender.setFocusPopUp(true);
+    popUpAppender.setNewestMessageAtTop(true);
+
+    // Add the appender to the logger
+    log.addAppender(popUpAppender);
+
+    //tm_g.log = log;
+    //tm_g.console = console;
+
+    //tm_g.log.info("Start Logging: " + (new Date().toString()));
+</script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        grid = new Grid({ xMax: 1000, yMax: 1000, numBlocks: 100 });
+        var items = [
+			{ name: "rect1", dimensions: { x: 48, y: 11, width: 11, height: 4, color: "#ddd"} },
+			{ name: "rect2", dimensions: { x: 48, y: 15, width: 2, height: 5, color: "#ddd"} },
+			{ name: "rect3", dimensions: { x: 57, y: 15, width: 2, height: 7, color: "#ddd"} },
+			{ name: "rect4", dimensions: { x: 53, y: 18, width: 1, height: 10, color: "#ddd"} },
+			{ name: "rect5", dimensions: { x: 48, y: 28, width: 16, height: 2, color: "#ddd"} },
+			{ name: "rect6", dimensions: { x: 62, y: 11, width: 2, height: 17, color: "#ddd"} },
+			{ name: "rect7", dimensions: { x: 67, y: 8, width: 2, height: 25, color: "#ddd"} },
+            { name: "rect8", dimensions: { x: 34, y: 7, width: 35, height: 1, color: "#ddd"} },
+            { name: "rect9", dimensions: { x: 37, y: 14, width: 4, height: 19, color: "#ddd"} },
+            { name: "rect10", dimensions: { x: 14, y: 33, width: 50, height: 2, color: "#ddd"} },
+            { name: "rect11", dimensions: { x: 64, y: 22, width: 3, height: 2, color: "#ddd"} },
+            { name: "rect12", dimensions: { x: 48, y: 8, width: 3, height: 3, color: "#ddd"} },
+            { name: "rect13", dimensions: { x: 23, y: 7, width: 11, height: 14, color: "#ddd"} },
+            { name: "rect14", dimensions: { x: 9, y: 3, width: 5, height: 31, color: "#ddd"} },
+            { name: "rect15", dimensions: { x: 14, y: 3, width: 67, height: 1, color: "#ddd"} },
+            { name: "rect16", dimensions: { x: 77, y: 4, width: 4, height: 33, color: "#ddd"} },
+            { name: "rect17", dimensions: { x: 59, y: 37, width: 19, height: 2, color: "#ddd"} },
+            { name: "rect18", dimensions: { x: 55, y: 35, width: 4, height: 4, color: "#ddd"} },
+            { name: "rect19", dimensions: { x: 41, y: 24, width: 4, height: 9, color: "#ddd"} },
+            { name: "rect20", dimensions: { x: 34, y: 8, width: 14, height: 3, color: "#ddd"} }
+
+		];
+
+        grid.update(items);
+        grid.draw();
+
+        //debugger;
+        var vicinity1 = TM_gents__Vicinity.getVicinity({ name: "vicinity1" });
+        vicinity1.grid = grid;
+
+        var a1 = vicinity1.loadAgent({
+            name: "agt1.0",
+            lifespan: 20,
+            behaviors: [{ behavior: navigateMazeLowVisionBehavior }],
+            pulseInterval: 0,
+            pulseDuration: 20000,
+            taskDelay: 20,
+            priorityManagerType: "most-effective",
+            duringBirth: function(this_agent) {
+                this_agent.remember({ name: "xMax", fact: grid.numBlocks });
+                this_agent.remember({ name: "yMax", fact: grid.numBlocks });
+            }
+        });
+
+        var a1Pos = { x: 65, y: 20, width: 1, height: 1, color: "green" }; // "#003300"
+        a1.remember({ name: "dimensions", fact: a1Pos });
+
+        a1.onMove = function (moveArgs) {
+            this.vicinity.grid.update(moveArgs);
+
+            this.vicinity.grid.draw();
+        };
+
+        a1.live();
+
+
+        var a2 = vicinity1.loadAgent({
+            name: "agt2.0",
+            lifespan: 20,
+            behaviors: [{ behavior: navigateMazeLowVisionBehaviorRight }],
+            pulseInterval: 0,
+            pulseDuration: 10000,
+            taskDelay: 10,
+            priorityManagerType: "most-effective",
+            duringBirth: function(this_agent) {
+                this_agent.remember({ name: "xMax", fact: grid.numBlocks });
+                this_agent.remember({ name: "yMax", fact: grid.numBlocks });
+            }
+        });
+
+        var a2Pos = { x: 43, y: 12, width: 1, height: 1, color: "blue" }; //
+        a2.remember({ name: "dimensions", fact: a2Pos });
+
+        a2.onMove = function (moveArgs) {
+            this.vicinity.grid.update(moveArgs);
+
+            this.vicinity.grid.draw();
+        };
+
+        a1.live();
+
+    });
+
+
+</script>
+
+
+<script type="text/javascript">
+////////////////////////
+var Grid = (function(){
+		var Grid = function(gridArgs) {
+			this.xStart = 0; this.xEnd = gridArgs.xMax + 1; this.xIncr = gridArgs.xMax / gridArgs.numBlocks;
+			this.yStart = 0; this.yEnd = gridArgs.yMax + 1; this.yIncr = gridArgs.yMax / gridArgs.numBlocks;
+            this.numBlocks = gridArgs.numBlocks;
+			this.items = {};
+		}
+		
+		Grid.prototype = {
+			drawGrid: function(context) {
+				for (var x = this.xStart; x < this.xEnd; x += this.xIncr) {
+				  context.moveTo(x, 0);
+				  context.lineTo(x, this.yEnd);
+				}
+
+				for (var y = this.yStart; y < this.yEnd; y += this.yIncr) {
+				  context.moveTo(0, y);
+				  context.lineTo(this.xEnd, y);
+				}
+
+				context.strokeStyle = "#ddd";
+				context.stroke();
+			},
+			
+			draw: function () {
+				var c_canvas = document.getElementById("cvs");	
+				var context = c_canvas.getContext("2d");
+				
+				if (context) {	
+					c_canvas.height = this.yEnd;
+					c_canvas.width = this.xEnd;
+					
+					this.drawGrid(context);
+					this.drawItems(context);
+				}
+				else {
+					console.log("No context found");
+				}
+			},
+			
+			drawItems: function(context) {
+				var ths = this;
+				for (key in this.items) {
+					var item = this.items[key].new;
+					context.fillStyle="#ddd";
+                    if (item.color) {
+                        context.fillStyle=item.color;
+                    }
+					
+					var x = ths.getXOffset(item.x);
+					var y = ths.getYOffset(item.y);
+					var width = ths.getWidth(item.width);
+					var height = ths.getHeight(item.height);
+					context.fillRect(x,y,width,height);
+				}
+			},
+			
+			getXOffset: function(x) {
+				return x * this.xIncr;
+			},
+			
+			getYOffset: function(y) {
+				return y * this.yIncr;
+			},
+			
+			getWidth: function(width) {
+				return width * this.xIncr;
+			},
+			
+			getHeight: function(height) {
+				return height * this.yIncr;
+			},
+			
+			update: function(itemsToUpdate) {
+				var ths = this;
+				itemsToUpdate.forEach(function(item) {
+					var oldItem = null;
+					var cachedItem = ths.items[item.name];
+					if (cachedItem) {
+						var currentItem = cachedItem.new;
+						if (currentItem) {
+							oldItem = currentItem;
+						}
+					}
+					ths.items[item.name] = {"old": oldItem, "new": item.dimensions};
+				});
+			},
+
+            getClosestItem: function(name, direction, x, y, width, height) {
+				var ths = this;
+				for (key in this.items) {
+                    if (key != name) {
+					    var item = this.items[key].new;
+					
+					    var x1 = ths.getXOffset(x);
+					    var y1 = ths.getYOffset(y);
+					    var w1 = ths.getWidth(width);
+					    var h1 = ths.getHeight(height);
+
+					    var x2 = ths.getXOffset(item.x);
+					    var y2 = ths.getYOffset(item.y);
+					    var w2 = ths.getWidth(item.width);
+					    var h2 = ths.getHeight(item.height);
+						
+                        // increase boundary size
+						switch (direction) {
+							case "L":
+								// left edge of agt vs right edge of obstacle
+								if (this.intersects(x1,y1,w1,h1, x2, y2, w2, h2)) {
+									return item;
+								}								
+								break;
+							case "R":
+								// right edge of agt vs left edge of obstacle
+								if (this.intersects(x1,y1,w1,h1, x2, y2, w2, h2)) {
+									return item;
+								}									
+								break;
+							case "U":
+								// top edge of agt vs bottom edge of obstacle
+								if (this.intersects(x1,y1,w1,h1, x2, y2, w2, h2)) {
+									return item;
+								}									
+								break;
+							case "D":
+								// bottom edge of agt vs top edge of obstacle
+								if (this.intersects(x1,y1,w1,h1, x2, y2, w2, h2)) {
+									return item;
+								}									
+								break;
+						}						
+                    }
+				}
+
+                return null;
+            },
+
+			// returns true if there is any overlap
+			// params: x,y,w,h of two rectangles
+			intersects: function(x1, y1, w1, h1, x2, y2, w2, h2) {
+			  if (w2 !== Infinity && w1 !== Infinity) {
+				w2 += x2;
+				w1 += x1;
+				if (isNaN(w1) || isNaN(w2) || x2 > w1 || x1 > w2) return false;
+			  }
+			  if (y2 !== Infinity && h1 !== Infinity) {
+				h2 += y2;
+				h1 += y1;
+				if (isNaN(h1) || isNaN(y2) || y2 > h1 || y1 > h2) return false;
+			  }
+			  return true;
+			},
+			
+			checkLineIntersection: function(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
+				// if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
+				var denominator, a, b, numerator1, numerator2, result = {
+					x: null,
+					y: null,
+					onLine1: false,
+					onLine2: false
+				};
+				denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
+				if (denominator == 0) {
+					return result;
+				}
+				a = line1StartY - line2StartY;
+				b = line1StartX - line2StartX;
+				numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
+				numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
+				a = numerator1 / denominator;
+				b = numerator2 / denominator;
+
+				// if we cast these lines infinitely in both directions, they intersect here:
+				result.x = line1StartX + (a * (line1EndX - line1StartX));
+				result.y = line1StartY + (a * (line1EndY - line1StartY));
+			/*
+					// it is worth noting that this should be the same as:
+					x = line2StartX + (b * (line2EndX - line2StartX));
+					y = line2StartX + (b * (line2EndY - line2StartY));
+					*/
+				// if line1 is a segment and line2 is infinite, they intersect if:
+				if (a > 0 && a < 1) {
+					result.onLine1 = true;
+				}
+				// if line2 is a segment and line1 is infinite, they intersect if:
+				if (b > 0 && b < 1) {
+					result.onLine2 = true;
+				}
+				// if line1 and line2 are segments, they intersect if both of the above are true
+				return result;
+			}			
+			
+		}
+		
+		return Grid;	
+		
+	})();
+	
+</script>
+
+
+
+</body>
+</html>	

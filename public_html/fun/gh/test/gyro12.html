@@ -1,0 +1,444 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <title></title>
+
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+        }
+
+        .main {
+            border: 1px solid black;
+            box-shadow: 10px 10px 5px #888;
+            border-radius: 12px;
+            padding: 20px;
+            background-color: #ddd;
+            margin: 25px;
+            width: 800px;
+            margin-left:auto;
+            margin-right:auto;
+        }
+
+        .container {
+            -webkit-perspective: 300;
+            perspective: 300;
+        }
+
+        #canvas1 {
+            border-style: solid;
+            border-width: 2px;
+        }
+
+        #btnFireL {
+            height:40px;
+            width:80px;
+            float:left;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            font-weight: bolder;
+        }
+
+        #btnFireR {
+            height:40px;
+            width:80px;
+            float:right;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            font-weight:bolder;
+        }
+
+        .controlPanel {
+            margin-top:0;
+            padding-top:0;
+        }
+
+
+    </style>
+
+</head>
+<body>
+<div class="main">
+    <canvas id="canvas1" width="800" height="360"></canvas>
+    <menu id="controlPanel" class="controlPanel">
+        <div id="divFire">
+            <input type="button" id="btnFireL" class="Trigger" value="Fire" />
+            <input type="button" id="btnFireR" class="Trigger" value="Fire" />
+        </div>
+    </menu>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type="text/javascript">
+
+jQuery.urlParam = function (name) {
+    var results = new RegExp('[\\?&amp;]' + name + '=([^&amp;#]*)').exec(window.location.href);
+    return results[1] || 0;
+}
+
+var canvas;
+var ctx;
+var baseX, baseY;
+var lastBaseX = 0, lastBaseY = 0;
+var addX,addY;
+
+var enemies = [
+    { id: 0, x: 200, y: 0 , z: 300},
+    { id: 1, x: 400, y: 100, z: 400 },
+    { id: 2, x: -500, y: 0, z: 500 },
+    { id: 3, x: 600, y: -100, z: 600 },
+    { id: 4, x: 450, y: -600, z: 700 },
+    { id: 5, x: 800, y: -300, z: 800 },
+    { id: 6, x: -800, y: -400, z: 900 }
+];
+
+
+var xMap = [];
+var xMapAll = [];
+var yMap = [];
+var hasInited = false;
+var yaw, pitch, roll;
+
+var x1,y1; //scope position
+var factor = 5;
+
+var gImage;
+var debug;
+
+init();
+
+
+function init() {
+// remove address bar
+    /mobi/i.test(navigator.userAgent) && !location.hash && setTimeout(function () {
+        if (!pageYOffset) window.scrollTo(0, 1);
+    }, 1000);
+
+    //gImageVeryFar = new Image(); // Create a new blank image.
+    //gImageVeryFar.src = "images/ghost-veryfar.png";
+    //gImageFar = new Image(); // Create a new blank image.
+    //gImageFar.src = "images/ghost-far.png";
+    gImageNear = new Image(); // Create a new blank image.
+    gImageNear.src = "images/ghost-near.png";
+
+    gImageBackground = new Image(); // Create a new blank image.
+    gImageBackground.src = "images/sea_ocean_water.jpg";
+
+    ("DeviceOrientationEvent" in window)
+            ? window.addEventListener('deviceorientation', deviceOrientationHandler, false)
+            : alert("Your browser does not support device orientation.");
+
+    // Get the canvas element.
+    canvas = document.getElementById("canvas1");
+    if (canvas.getContext) {
+
+        // Specify 2d canvas type.
+        ctx = canvas.getContext("2d");
+        x1 = canvas.width /  2;
+        y1 = canvas.height /  2;
+
+        ctx.webkitImageSmoothingEnabled = false;
+        ctx.mozImageSmoothingEnabled = false;
+        ctx.imageSmoothingEnabled = false; //future
+    }
+
+    canvas.addEventListener("touchstart",onTouchStart,false);
+
+    try {
+        addX = jQuery.urlParam("x");
+        addY = jQuery.urlParam("y");
+        if (addX) {
+            enemies.push({id:99,x: parseInt(addX), y: parseInt(addY)})
+
+        }
+    }
+    catch(error) {
+    }
+
+    try {
+        var sim = jQuery.urlParam("sim");
+        if (sim) {
+            setTimeout(simulateGeo,500);
+        }
+    }
+    catch(error) {
+    }
+
+    try {
+    debug = jQuery.urlParam("dbg");
+    }
+
+    catch(error) {
+    }
+
+    // setup fire weapon
+    $(".Trigger").click(fireWeapon);
+
+    var menu = document.getElementById("controlPanel");
+    menu.addEventListener('touchmove', function(event) {
+        event.preventDefault();
+    }, false);
+}
+
+// shooting (start)
+var firedWeapon = false;
+var wx = x1; // center
+var wy = canvas.height;  // start at bottom
+var ammoSpeed = 20;
+var ammoSize = 20;
+
+function fireWeapon() {
+    firedWeapon = true;
+    moveAmmo();
+}
+
+function moveAmmo() {
+    if (firedWeapon) {
+        if (!hitTargetOrCompletelyMissed()) {
+            var oldFillStyle = ctx.fillStyle;
+            ctx.beginPath();
+            ctx.arc(wx, wy, ammoSize, 0, 2 * Math.PI);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+            ctx.fillStyle = oldFillStyle;
+
+            wy -= ammoSpeed;    // move ammo
+            ammoSize -= ammoSpeed * 0.05;
+        }
+        else {
+            firedWeapon = false;    // reload weapon
+            wy = canvas.height;     // start at beginning
+            ammoSize = 20;
+        }
+
+    }
+
+}
+
+function hitTargetOrCompletelyMissed() {
+    if (wy < 0 || ammoSize <= 0) {
+        return true;
+    }
+
+    // only hit if within scope
+    if (!hitTestPoint(x1, y1, 20, 20, wx, wy)) {
+        return false;
+    }
+
+    for (var i=0; i<enemies.length; i++) {
+        var enemy = enemies[i];
+
+        // get dimensions of current enemy image
+        var w = enemy.width;
+        var h = enemy.height;
+
+        if (hitTestPoint(enemy.actualX, enemy.actualY, w, h, wx, wy)) {
+            alert('hit enemy: ' + enemy.id);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function hitTestPoint(x1, y1, w1, h1, x2, y2)
+{
+    //x1, y1 = x and y coordinates of object 1
+    //w1, h1 = width and height of object 1
+    //x2, y2 = x and y coordinates of object 2 (usually midpt)
+    if ((x1 <= x2 && x1+w1 >= x2) &&
+            (y1 <= y2 && y1+h1 >= y2))
+        return true;
+    else
+        return false;
+}
+// shooting (end)
+
+function setupArrays() {
+    //debugger;
+
+    // setup xMap
+    xMap[0] = 0;
+    for (var i=1, j=1; i<=180; i++, j++) {
+        xMap[i] = j;
+    }
+    for (var i=360, j=-1; i>180; i--, j--) {
+        xMap[i] = j;
+    }
+
+    // setup yMap
+    yMap[0] = 0;
+    for (var i=1, j=1; i<=180; i++, j++) {
+        yMap[i] = j;
+    }
+
+}
+
+function deviceOrientationHandler(eventData) {
+    var info, xyz = "[X, Y, Z]";
+    var x = 0, y = 0;
+
+    yaw = Math.floor(eventData.alpha);
+    pitch = Math.floor(eventData.beta);
+    roll = Math.floor(eventData.gamma);
+
+    var e1 = document.getElementById("e1");
+    var s1 = document.getElementById("s1");
+
+    // recalculate enemy positions as offset from original
+    baseX = yaw;
+    baseY = roll;
+    if (!hasInited) {
+
+
+        if (baseX != 0 && baseY != 0) {
+            hasInited = true;
+
+            setupArrays();
+        }
+
+    }
+
+    xFactor = (xMap[baseX] * factor);
+    yFactor = (yMap[Math.abs(baseY)] * factor);
+    xPanFactor = baseX * 1;
+    yPanFactor = 1000 - yMap[Math.abs(baseY)] * factor;  // 1000 estimated max height
+
+    if (lastBaseX != baseX || lastBaseY != baseY) {
+        draw();
+    }
+
+}
+
+var zMax = 1000;
+var xFactor = 0;
+var yFactor = 0;
+var xPanFactor = xFactor;
+var yPanFactor = yFactor;
+
+function draw() {
+    var x, y;
+
+    //debugger;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.drawImage(gImageBackground,xPanFactor, yPanFactor, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+    if (debug) {
+        ctx.font = "bold 12pt Courier";
+        ctx.fillText("xp:" + xPanFactor + ",yp:" + yPanFactor,500,100);
+    }
+
+    for (var i = 0; i < enemies.length; i++) {
+        var enemy = enemies[i];
+        enemy.actualX = enemy.x + xFactor;
+        enemy.actualY = enemy.y + yFactor;
+        enemy.actualZ = enemy.z;
+
+
+        var text = "id: " + enemy.id + ", x: " + enemy.actualX +
+                ", y: " + enemy.actualY + ", z: " + enemy.actualZ
+                + "[" + enemy.x + "," + enemy.y + "," + enemy.z + "]";
+
+        // get dimensions of current enemy image
+        gImage = gImageNear;
+        var w = gImage.width;
+        var h = gImage.height;
+
+        // adjust for distance
+        var closenessFactor = (enemy.z / zMax); //* factor;
+        w -= w * closenessFactor;
+        h -= h * closenessFactor;
+        enemy.width = w;
+        enemy.height = h;
+
+        ctx.drawImage(gImage,enemy.actualX, enemy.actualY, enemy.width, enemy.height);
+        /*
+        ctx.beginPath();
+        ctx.rect(x, y, 20, 20);
+        ctx.stroke();
+        ctx.closePath();
+        */
+        if (debug) {
+            ctx.font = "bold 14pt Courier";
+            ctx.fillText(text,enemy.actualX,enemy.actualY+10);
+        }
+    }
+
+    drawScope();
+
+    moveAmmo();
+}
+
+function drawScope() {
+
+    var text = "x: " + x1 + ",y: " + y1;
+
+    ctx.beginPath();
+    ctx.arc(x1, y1, 20, 0, 2 * Math.PI);
+    ctx.moveTo(x1-30,y1);
+    ctx.lineTo(x1+30,y1);
+    ctx.moveTo(x1,y1-30);
+    ctx.lineTo(x1,y1+30);
+    ctx.stroke();
+    ctx.closePath();
+
+    if (debug) {
+        text = "yaw: " + yaw + ",roll: " + roll + " ,x1: " + x1 + ",y1: " + y1;
+        ctx.font = "bold 18pt Arial";
+        ctx.fillText(text,x1,y1+10);
+        text = "xMap: " + xFactor + ", yMap: " + yFactor;
+        ctx.fillText(text,x1,y1+40);
+    }
+}
+
+function onTouchStart(evt) {
+    evt.preventDefault();
+    var touchX = evt.targetTouches[0].pageX;
+    var touchY = evt.targetTouches[0].pageY;
+    ctx.fillText('x=' + touchX + ',y=' + touchY,20,400);
+}
+
+function round(val) {
+    var amt = 10;
+    return Math.round(val * amt) / amt;
+}
+
+
+function simulateGeo() {
+    //alert('sim');
+
+    //debugger;
+    evtData1 = {
+        "alpha": 20, "beta": 8, "gamma": 4
+    }
+
+    setTimeout("deviceOrientationHandler(evtData1)",1000);
+
+
+
+    //debugger;
+    evtData2 = {
+        "alpha": 50, "beta": 15, "gamma": 24
+    }
+
+    setTimeout("deviceOrientationHandler(evtData2)",3000);
+
+
+    //debugger;
+    evtData3 = {
+        "alpha": 320, "beta": 15, "gamma": 24
+    }
+    setTimeout("deviceOrientationHandler(evtData3)",3000);
+
+}
+
+</script>
+
+</body>
+</html>

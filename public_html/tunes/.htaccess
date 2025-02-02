@@ -1,0 +1,8 @@
+
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^tunes.px3j.com$ [OR]
+RewriteCond %{HTTP_HOST} ^www.tunes.px3j.com$
+RewriteRule ^(.*)$ "http\:\/\/98\.221\.41\.192\/kplaylist\/" [R=301,L]
+
+AddType application/x-java-jnlp-file jnlp

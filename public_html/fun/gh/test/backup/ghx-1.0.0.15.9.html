@@ -1,0 +1,2443 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="language" content="en-us" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <!--<meta name="viewport" content="width=320; initial-scale=0.60; user-scalable=no" />-->
+    <meta id="viewport" name="viewport" content="minimal-ui" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="game, HTML5, free, ghosts, shooting, arcade, intelligent agents" />
+    <meta name="description" content="Play this free game against virtual enemies that are all around you.
+            Your mobile device is the camera into the ghost world.
+            This is an HTML5 game and runs safely in your browser sandbox." />
+    <meta name="author" content="Tony Marius" />
+    <meta name="copyright" content="&copy; 2014 Tony Marius. All rights reserved." />
+    <meta name="rating" content="General" />
+    <!--<meta name="robots" content="index, follow" />-->
+    <meta name="creator" content="Tony Marius" />
+    <meta name="publisher" content="T-gents" />
+
+    <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
+
+    <script>
+        if (/mobi/i.test(navigator.userAgent) && !location.hash) {
+            if (/Chrome/i.test(navigator.userAgent)) {  // Chrome/Android
+                var vp = document.getElementById('viewport');
+                vp.setAttribute('content', 'width=320; initial-scale=0.60; user-scalable=no');
+            }
+        }
+    </script>
+
+    <title>Get those Ghosts</title>
+
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+        }
+
+        .main {
+            border: 1px solid black;
+            box-shadow: 10px 10px 5px #888;
+            border-radius: 12px;
+            padding: 20px;
+            background-color: #ddd;
+            width: 800px;
+            margin-left:auto;
+            margin-right:auto;
+            margin-bottom: 0px;
+            margin-top: 0px;
+        }
+
+        .container {
+            -webkit-perspective: 300;
+            perspective: 300;
+        }
+
+        #canvas1 {
+            border-style: solid;
+            border-width: 2px;
+            background-color: #0B2161;
+        }
+
+        .center {
+            float: left;
+        }
+
+        #btnFireL {
+            height:110px;
+            width:200px;
+            float:left;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            font-weight: bolder;
+        }
+
+        #btnFireR {
+            height:110px;
+            width:200px;
+            float:right;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            font-weight:bolder;
+        }
+
+        .controlPanel {
+            margin-top:0;
+            padding-top:0;
+            height:80px;
+            width:805px;
+            padding-left:0;
+        }
+
+        .center {
+            width: 300px;
+        }
+
+        #score {
+            clear: both;
+        }
+
+        .leftColumnConsole {
+            float: left;
+        }
+
+        .rightColumnConsole {
+            float: right;
+        }
+
+        .consoleValue {
+            font-weight: bolder;
+            font-size: 16pt;
+        }
+
+        #message {
+            clear: both;
+        }
+
+        #btnRestart {
+            height: 50px;
+            width: 100px;
+        }
+
+        #btnOptions {
+            clear: both;
+        }
+
+        .invisible {
+            display:none;
+        }
+
+        #dlgOptions {
+            display:none;
+        }
+
+        .ui-dialog-osx {
+            -moz-border-radius: 0 0 8px 8px;
+            -webkit-border-radius: 0 0 8px 8px;
+            border-radius: 0 0 8px 8px; border-width: 0 8px 8px 8px;
+        }
+
+        #cbxSound {
+            height: 40px;
+            width: 40px;
+        }
+
+        .dlgLabel {
+            font-size: 20pt;
+        }
+
+        .gh-sharing-center {
+            margin-left: auto;
+            margin-right: auto;
+            width: 400px;
+        }
+
+        #gh-sharing {
+            width: 100%;
+        }
+		
+		.mailLink {
+			height: 40px;
+			width: 60px;
+			margin-left: 30px;
+			padding-top: 5px;
+		}
+
+        .listImage {
+            height:60px;
+            width: 50px;
+        }
+
+		.textLogo {
+			font-family: Arial, Arial, Helvetica, sans-serif;
+			font-size: 2em;
+			color: saddlebrown;
+		}
+		.imageLogo {
+			height: 2em;
+			width: 2em;
+		}
+		
+		.startText {
+			margin-left: 150px;
+		}
+
+        #mainImage {
+            height: 70%; width: 70%
+        }
+    </style>
+
+</head>
+<body id="body">
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.0";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<div id="main" class="main">
+    <div>1.0.0.15.9</div>
+    <canvas id="canvas1" width="800" height="360"></canvas>
+    <menu id="controlPanel" class="controlPanel">
+        <div id="divFire">
+            <canvas id="btnFireL"></canvas>
+            <div class="center">
+                <div id="level">
+                    <span class="leftColumnConsole">Level <span id="levelValue" class="consoleValue"></span></span>
+                    <span class="rightColumnConsole">Enemies <span id="enemiesValue" class="consoleValue"></span></span>
+                </div>
+                <div id="score">
+                    <span class="leftColumnConsole">Score <span id="scoreValue" class="consoleValue"></span></span>
+                    <span class="rightColumnConsole">Time <span id="timerValue" class="consoleValue"></span></span>
+                </div>
+                <div id="message">
+                    <div class="leftColumnConsole">
+                        <div id="messageValue" class="consoleValue"></div>
+                        <button id="btnOptions" type="button" class="invisible">Options</button>
+                    </div>
+                    <span class="rightColumnConsole"><button id="btnRestart" type="button" class="invisible">Restart</button></span>
+                </div>
+            </div>
+            <canvas id="btnFireR"></canvas>
+        </div>
+    </menu>
+</div>
+<br style="clear:both;"/>
+<div id="gh-sharing" class="invisible">
+    <div id="gh-sharing-links" class="gh-sharing-center">
+        <table>
+            <tr>
+                <td><g:plusone></g:plusone></td>
+                <td>
+					<a href="https://twitter.com/intent/tweet?hashtags=GetThoseGhosts,T-gents" class="twitter-share-button" data-lang="en" data-related="funhouse_kiuansoft">Tweet</a>
+				</td>
+                <td><div class="fb-like" data-href="http://funhouse.kiuansoft.com/gh/prod/gh.html/" data-layout="button_count" data-action="like" data-show-faces="true" data-share="false"></div></td>
+				<td>
+					<script language="JavaScript">
+					 var ref = location.href;
+					 document.write('<a href="mailto:?subject=Get those Ghosts&body=' + ref + '"><img class="mailLink" src="../images/Anonymous_Mail_1_icon.png" alt="Share by Mail"/></a>');
+					 </script>	
+				</td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div id="console" class="invisible"></div>
+
+<div id="dlgOptions" title="Options">
+    <div id="divSponsor">
+        Powered by <span class="logo"><img class="imageLogo" src="../images/man_wearing_hat_silhouette.png" /><span class="textLogo">T-gents</span></span> and <a href="http://www.kiuansoft.com">Kiuansoft</a><br/>
+        Tony Marius and Paul Parrone<br/><br/>
+		<a href="mailto:funhouse@kiuansoft.com?Subject=Support" target="_top">Contact us</a><br/><br/>
+    </div>
+    <div id="divSound">
+        <input id="cbxSound" name="cbxSound" type="checkbox"/> <span class="dlgLabel">Sound</span>
+    </div>
+    <section id="helpSection">
+        <a href="#" class="aInstructions">Instructions</a>
+    </section>
+</div>
+
+<div id="startPage" class="invisible">
+    <figure id="divMainImage">
+        <img id="mainImage" alt="Loading..." />
+    </figure>
+    <section id="helpSection">
+		<span class="logoContainer">
+			Powered by <span class="logo"><img class="imageLogo" src="../images/man_wearing_hat_silhouette.png" /><span class="textLogo">T-gents</span></span>
+		</span>
+		<span class="startText">Press start or read <a href="#" class="aInstructions">Instructions</a></span>
+    </section>
+</div>
+
+<section id="helpPage" class="invisible">
+    <section id="instructions">
+        <h3>Instructions</h3>
+        <br/>
+        <p>Move device until enemy is in target and fire one of the buttons.  You can pan left, right, up and down.</p>
+        <p>To move up to the next level you must destroy all the enemies before the time runs out. There is less time to destroy the enemies as you move up in levels.</p>
+        <p>There are more points for shooting enemies that are far away or have a bonus sign.  The bonus is 500 to 1500 points based on distance.
+            There is an additional 750 bonus points if the enemy with a bonus is the last one destroyed on a level.</p>
+		<p> How to play video
+			<video width="320" height="240" controls>
+			  <source src="../videos/gh_how_to_play.mov" type="video/quicktime">
+			  Your browser does not support the video tag.
+			</video>
+		</p>
+
+		<h4>Points</h4>
+        <table id="scoringChart" border="1px solid black" width="400px">
+            <tr>
+                <th>Enemy</th>
+                <th>Close</th>
+                <th>Near</th>
+                <th>Far</th>
+            </tr>
+            <tr>
+                <td><img src="../images/game-ghost.png" class="listImage"/></td>
+                <td>300</td>
+                <td>600</td>
+                <td>900</td>
+            </tr>
+            <tr>
+                <td><img src="../images/ghost-near.png" class="listImage"/></td>
+                <td>100</td>
+                <td>200</td>
+                <td>300</td>
+            </tr>
+            <tr>
+                <td><img src="../images/ghost-mad-near.png" class="listImage"/></td>
+                <td>200</td>
+                <td>400</td>
+                <td>600</td>
+            </tr>
+            <tr>
+                <td><img src="../images/Grim_Reaper.png" class="listImage"/></td>
+                <td>200</td>
+                <td>400</td>
+                <td>600</td>
+            </tr>
+            <tr>
+                <td><img src="../images/little-octopus.png" class="listImage"/></td>
+                <td>150</td>
+                <td>300</td>
+                <td>450</td>
+            </tr>
+			<tr>
+                <td><img src="../images/black_bomb.png" class="listImage"/></td>
+                <td>wipes out 1000 points</td>
+                <td>wipes out 1000 points</td>
+                <td>wipes out 1000 points</td>
+            </tr>
+        </table>
+
+        <p>
+            This game is optimized for iOS environment but should work fine in most Android devices.
+            It requires a device with a gyroscope and plenty of room to pan left and right.
+        </p>
+		
+		<p>
+			Attributions
+			<ul id="attributions">
+				<li>videos and graphic art: Brittany Marius</li>
+				<li>enemies: <a href="http://openclipart.org">OpenClipart</a></li>
+				<li>background: <a href="http://all-free-download.com/free-photos/sea_ocean_water_238526.html">All-Free-Download.com</a></li>
+				<li>music: <a href="http://www.basslessons.be/drumloops.php">Free Drum Loops</a></li>
+			</ul>
+		</p>
+		
+		<p>
+			<a href="mailto:funhouse@kiuansoft.com?Subject=Comments" target="_top">Send feedback</a>
+		</p>
+
+    </section>
+</section>
+
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+
+<!-- sharing section (start) -->
+
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<script type="text/javascript">
+    window.___gcfg = {
+        lang: 'en-US',
+        parsetags: 'onload'
+    };
+    (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+</script>
+
+<!-- sharing section (end) -->
+
+<script type="text/javascript" src="../js/lib/tm-toolbox-min.js"></script>
+<script type="text/javascript" src="../js/lib/tm-agent-base-min.js"></script>
+<script type="text/javascript" src="../js/lib/tm-vicinity-min.js"></script>
+
+<script type="text/javascript" src="../js/lib/behaviors/animation/basic-animation-behavior.js"></script>
+<script type="text/javascript" src="../js/lib/behaviors/animation/basic-mad-animation-behavior.js"></script>
+
+<script type="text/javascript">
+/* Copyright Tony Marius 2014
+ All rights reserved
+ */
+var game;
+
+$(document).ready(function(){
+    try {
+
+    gh_app_init();
+
+    $("a.aInstructions").click(function(e) {
+        e.preventDefault();
+        $("#helpPage").dialog({
+            modal: true,
+            draggable: false,
+            resizable: false,
+            position: ['center', 'top'],
+            show: 'blind',
+            hide: 'blind',
+            width: 800,
+            dialogClass: 'ui-dialog-osx',
+            title: "Instructions",
+            buttons: {
+                "close": function() {
+
+                    $(this).dialog("close");
+                }
+            }
+
+        });
+    });
+
+    }
+    catch (err) {
+        debug = true;
+        $("#console").removeClass("invisible");
+        util.writeToConsole(err.message);
+		
+		gameConfig.sound.useSound = false;
+    }
+});
+
+
+jQuery.urlParam = function (name) {
+    var results = new RegExp('[\\?&amp;]' + name + '=([^&amp;#]*)').exec(window.location.href);
+    return results[1] || 0;
+}
+
+
+var gameConfig = {
+    level: [
+        {
+            id: "default", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 40
+        },
+        {
+            id: "1", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 35
+        },
+        {
+            id: "2", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 30
+        },
+        {
+            id: "3", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 30
+        },
+        {
+            id: "4", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 25
+        },
+        {
+            id: "5", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 25
+        },
+        {
+            id: "6", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 20
+        },
+        {
+            id: "7", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 20
+        },
+        {
+            id: "8", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 15
+        },
+        {
+            id: "9", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 15
+        },
+        {
+            id: "10", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 10
+        },
+        {
+            id: "11", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 10
+        },
+        {
+            id: "12", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 10
+        },
+        {
+            id: "13", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 5
+        },
+        {
+            id: "14", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 5
+        },
+        {
+            id: "15", scene: "ocean", background: "../images/sea_ocean_water.jpg", time: 5
+        }
+    ],
+    bounds: {
+        x: {min: -800, max: 800},
+        y: {min: -700, max: 100},
+        z: {min: 0, max: 1000}
+    },
+    sound: {
+        useSound: true,
+        musicFile: "../sounds/52-Basslessons.be.wav"
+    },
+    storage: {
+        hasLocalStorage: false,
+        keys: {
+            USE_SOUND: "gh.useSound"
+        }
+    },
+    mode: {
+        type: "full"
+    },
+    startPage: {
+        wasShown: false,
+        mainImage: "../images/game2.png"
+    }
+
+};
+
+// note: globals are used for performance over flexibility
+// globals (start)
+var baseX, baseY;
+var lastBaseX = 0, lastBaseY = 0;
+var addX,addY;
+
+var obstacleTypeConfig = {
+    "simple-ghost": {
+        name: "simple-ghost",
+        type: "agent",
+        animation: {
+            images: [
+                "../images/ghost-near.png"
+            ],
+            hitImage: "../images/ghost-near-hit.png"
+        },
+        agent: {
+            name: name,
+            lifespan: 100,
+            pulseInterval: 0,
+            pulseDuration: 3000,
+            taskDelay: 10,
+            priorityManagerType: "round-robin",
+            behaviors: [{behavior: basicAnimationBehavior}],
+            duringBirth: function (this_agent) {
+                var config = tm_g.findOne(obstacleConfig, function (item) {
+                    return item.id == this_agent._name;
+                });
+
+                config.original = {};
+
+                config.original.speed = {x:0, y:0, z:0};
+                util.copyCoordinates(config.speed, config.original.speed);
+                this_agent.remember({name: "speed", fact: config.speed});
+
+                config.original.direction = {x:"", y:"", z:""};
+                util.copyCoordinates(config.direction, config.original.direction);
+                this_agent.remember({name: "direction", fact: config.direction});
+
+                config.original.position = {x:0, y:0, z:0};
+                util.copyCoordinates(config.position, config.original.position);
+                this_agent.remember({name: "position", fact: config.position});
+
+                this_agent.remember({ name: "xBounds", fact: gameConfig.bounds.x });
+                this_agent.remember({ name: "yBounds", fact: gameConfig.bounds.y });
+                this_agent.remember({ name: "zBounds", fact: gameConfig.bounds.z });
+
+                enemies.push(config);
+            },
+            onReceiveMessage: function(messageArgs) {
+                switch(messageArgs.header.name) {
+                    case "hit":
+                        if (messageArgs.header.to[0] == this._name) {
+                            this.terminate();
+                        }
+                        break;
+                }
+            },
+            onLifespanWarning: function () {
+            },
+            onTerminate: function () {
+                this.vicinity = null;
+            }
+        },
+        events: {
+            onHitEnemy: function(enemy) {
+                var msgArgs = {
+                    header: {
+                        name: "hit",
+                        to: [enemy.id],
+                        ttl: 3
+                    },
+                    "body" : {
+                        "text": enemy.id
+                    }
+                };
+                gameViewVicinity.postMessage({
+                    name: "msg", args: msgArgs
+                });
+
+                enemy.speed.x = enemy.speed.y = enemy.speed.z = 0;
+                enemy.currentDisplay.index = -1;
+                enemy.currentDisplay.instance = imageList[enemy.config.animation.hitImage];
+                enemy.isActive = false;
+                enemy.hitScore = game.engine.calculateScore(enemy.points,enemy.position,enemy.isBonus);
+
+                setTimeout(function(e) {
+                    e.currentDisplay.instance = null;
+                }, 1000, enemy);
+
+                game.engine.handleHit(enemy);
+            }
+        }
+    },
+    "simple-mad-ghost": {
+        name: "simple-ghost",
+        type: "agent",
+        animation: {
+            images: [
+                "../images/ghost-mad-near.png"
+            ],
+            hitImage: "../images/ghost-mad-near-hit.png"
+        },
+        agent: {
+            name: name,
+            lifespan: 100,
+            pulseInterval: 0,
+            pulseDuration: 3000,
+            taskDelay: 10,
+            priorityManagerType: "round-robin",
+            behaviors: [{behavior: basicMadAnimationBehavior}],
+            duringBirth: function (this_agent) {
+                var config = tm_g.findOne(obstacleConfig, function (item) {
+                    return item.id == this_agent._name;
+                });
+
+                config.original = {};
+
+                config.original.speed = {x:0, y:0, z:0};
+                util.copyCoordinates(config.speed, config.original.speed);
+                this_agent.remember({name: "speed", fact: config.speed});
+
+                config.original.direction = {x:"", y:"", z:""};
+                util.copyCoordinates(config.direction, config.original.direction);
+                this_agent.remember({name: "direction", fact: config.direction});
+
+                config.original.position = {x:0, y:0, z:0};
+                util.copyCoordinates(config.position, config.original.position);
+                this_agent.remember({name: "position", fact: config.position});
+
+                this_agent.remember({name: "targetLocation", fact: { x: 400, y: 180 , z: 0}});
+
+                this_agent.remember({ name: "xBounds", fact: gameConfig.bounds.x });
+                this_agent.remember({ name: "yBounds", fact: gameConfig.bounds.y });
+                this_agent.remember({ name: "zBounds", fact: gameConfig.bounds.z });
+
+                enemies.push(config);
+            },
+            onReceiveMessage: function(messageArgs) {
+                switch(messageArgs.header.name) {
+                    case "hit":
+                        if (messageArgs.header.to[0] == this._name) {
+                            this.terminate();
+                        }
+                        break;
+                }
+            },
+            onLifespanWarning: function () {
+            },
+            onTerminate: function () {
+                this.vicinity = null;
+            }
+        },
+        events: {
+            onHitEnemy: function(enemy) {
+                var msgArgs = {
+                    header: {
+                        name: "hit",
+                        to: [enemy.id],
+                        ttl: 3
+                    },
+                    "body" : {
+                        "text": enemy.id
+                    }
+                };
+                gameViewVicinity.postMessage({
+                    name: "msg", args: msgArgs
+                });
+
+                enemy.speed.x = enemy.speed.y = enemy.speed.z = 0;
+                enemy.currentDisplay.index = -1;
+                enemy.currentDisplay.instance = imageList[enemy.config.animation.hitImage];
+                enemy.isActive = false;
+                enemy.hitScore = game.engine.calculateScore(enemy.points,enemy.position,enemy.isBonus);
+
+                setTimeout(function(e) {
+                    e.currentDisplay.instance = null;
+                }, 1000, enemy);
+
+                game.engine.handleHit(enemy);
+            }
+        }
+    },
+    "grim-reaper": {
+        name: "grim-reaper",
+        type: "agent",
+        animation: {
+            images: [
+                "../images/Grim_Reaper.png"
+            ],
+            hitImage: "../images/Grim_Reaper-hit.png"
+        },
+        agent: {
+            name: name,
+            lifespan: 100,
+            pulseInterval: 0,
+            pulseDuration: 3000,
+            taskDelay: 10,
+            priorityManagerType: "round-robin",
+            behaviors: [{behavior: basicMadAnimationBehavior}],
+            duringBirth: function (this_agent) {
+                var config = tm_g.findOne(obstacleConfig, function (item) {
+                    return item.id == this_agent._name;
+                });
+
+                config.original = {};
+
+                config.original.speed = {x:0, y:0, z:0};
+                util.copyCoordinates(config.speed, config.original.speed);
+                this_agent.remember({name: "speed", fact: config.speed});
+
+                config.original.direction = {x:"", y:"", z:""};
+                util.copyCoordinates(config.direction, config.original.direction);
+                this_agent.remember({name: "direction", fact: config.direction});
+
+                config.original.position = {x:0, y:0, z:0};
+                util.copyCoordinates(config.position, config.original.position);
+                this_agent.remember({name: "position", fact: config.position});
+
+                this_agent.remember({name: "targetLocation", fact: { x: 400, y: 180 , z: 0}});
+
+                this_agent.remember({ name: "xBounds", fact: gameConfig.bounds.x });
+                this_agent.remember({ name: "yBounds", fact: gameConfig.bounds.y });
+                this_agent.remember({ name: "zBounds", fact: gameConfig.bounds.z });
+
+                enemies.push(config);
+            },
+            onReceiveMessage: function(messageArgs) {
+                switch(messageArgs.header.name) {
+                    case "hit":
+                        if (messageArgs.header.to[0] == this._name) {
+                            this.terminate();
+                        }
+                        break;
+                }
+            },
+            onLifespanWarning: function () {
+            },
+            onTerminate: function () {
+                this.vicinity = null;
+            }
+        },
+        events: {
+            onHitEnemy: function(enemy) {
+                var msgArgs = {
+                    header: {
+                        name: "hit",
+                        to: [enemy.id],
+                        ttl: 3
+                    },
+                    "body" : {
+                        "text": enemy.id
+                    }
+                };
+                gameViewVicinity.postMessage({
+                    name: "msg", args: msgArgs
+                });
+
+                enemy.speed.x = enemy.speed.y = enemy.speed.z = 0;
+                enemy.currentDisplay.index = -1;
+                enemy.currentDisplay.instance = imageList[enemy.config.animation.hitImage];
+                enemy.isActive = false;
+                enemy.hitScore = game.engine.calculateScore(enemy.points,enemy.position,enemy.isBonus);
+
+                setTimeout(function(e) {
+                    e.currentDisplay.instance = null;
+                }, 1000, enemy);
+
+                game.engine.handleHit(enemy);
+            }
+        }
+    },
+    "octo-ghost": {
+        name: "octo-ghost",
+        type: "agent",
+        animation: {
+            images: [
+                "../images/little-octopus.png"
+            ],
+            hitImage: "../images/little-octopus-hit.png"
+        },
+        agent: {
+            name: name,
+            lifespan: 100,
+            pulseInterval: 0,
+            pulseDuration: 3000,
+            taskDelay: 10,
+            priorityManagerType: "round-robin",
+            behaviors: [{behavior: basicMadAnimationBehavior}],
+            duringBirth: function (this_agent) {
+                var config = tm_g.findOne(obstacleConfig, function (item) {
+                    return item.id == this_agent._name;
+                });
+
+                config.original = {};
+
+                config.original.speed = {x:0, y:0, z:0};
+                util.copyCoordinates(config.speed, config.original.speed);
+                this_agent.remember({name: "speed", fact: config.speed});
+
+                config.original.direction = {x:"", y:"", z:""};
+                util.copyCoordinates(config.direction, config.original.direction);
+                this_agent.remember({name: "direction", fact: config.direction});
+
+                config.original.position = {x:0, y:0, z:0};
+                util.copyCoordinates(config.position, config.original.position);
+                this_agent.remember({name: "position", fact: config.position});
+
+                this_agent.remember({name: "targetLocation", fact: { x: 400, y: 180 , z: 0}});
+
+                this_agent.remember({ name: "xBounds", fact: gameConfig.bounds.x });
+                this_agent.remember({ name: "yBounds", fact: gameConfig.bounds.y });
+                this_agent.remember({ name: "zBounds", fact: gameConfig.bounds.z });
+
+                enemies.push(config);
+            },
+            onReceiveMessage: function(messageArgs) {
+                switch(messageArgs.header.name) {
+                    case "hit":
+                        if (messageArgs.header.to[0] == this._name) {
+                            this.terminate();
+                        }
+                        break;
+                }
+            },
+            onLifespanWarning: function () {
+            },
+            onTerminate: function () {
+                this.vicinity = null;
+            }
+        },
+        events: {
+            onHitEnemy: function(enemy) {
+                var msgArgs = {
+                    header: {
+                        name: "hit",
+                        to: [enemy.id],
+                        ttl: 3
+                    },
+                    "body" : {
+                        "text": enemy.id
+                    }
+                };
+                gameViewVicinity.postMessage({
+                    name: "msg", args: msgArgs
+                });
+
+                enemy.speed.x = enemy.speed.y = enemy.speed.z = 0;
+                enemy.currentDisplay.index = -1;
+                enemy.currentDisplay.instance = imageList[enemy.config.animation.hitImage];
+                enemy.isActive = false;
+                enemy.hitScore = game.engine.calculateScore(enemy.points,enemy.position,enemy.isBonus);
+
+                setTimeout(function(e) {
+                    e.currentDisplay.instance = null;
+                }, 1000, enemy);
+
+                game.engine.handleHit(enemy);
+            }
+        }
+    },
+    "ghost-stay-away": {
+        name: "ghost-stay-away",
+        type: "agent",
+        animation: {
+            images: [
+                "../images/game-ghost.png"
+            ],
+            hitImage: "../images/game-ghost-hit.png"
+        },
+        agent: {
+            name: name,
+            lifespan: 100,
+            pulseInterval: 0,
+            pulseDuration: 3000,
+            taskDelay: 10,
+            priorityManagerType: "round-robin",
+            behaviors: [{behavior: basicMadAnimationBehavior}],
+            duringBirth: function (this_agent) {
+                var config = tm_g.findOne(obstacleConfig, function (item) {
+                    return item.id == this_agent._name;
+                });
+
+                config.original = {};
+
+                config.original.speed = {x:0, y:0, z:0};
+                util.copyCoordinates(config.speed, config.original.speed);
+                this_agent.remember({name: "speed", fact: config.speed});
+
+                config.original.direction = {x:"", y:"", z:""};
+                util.copyCoordinates(config.direction, config.original.direction);
+                this_agent.remember({name: "direction", fact: config.direction});
+
+                config.original.position = {x:0, y:0, z:0};
+                util.copyCoordinates(config.position, config.original.position);
+                this_agent.remember({name: "position", fact: config.position});
+
+                this_agent.remember({name: "targetLocation", fact: { x: 400, y: 180 , z: 0}});
+
+                this_agent.remember({ name: "xBounds", fact: gameConfig.bounds.x });
+                this_agent.remember({ name: "yBounds", fact: gameConfig.bounds.y });
+                this_agent.remember({ name: "zBounds", fact: {min: 500, max: 1000} });  // not too close
+
+                enemies.push(config);
+            },
+            onReceiveMessage: function(messageArgs) {
+                switch(messageArgs.header.name) {
+                    case "hit":
+                        if (messageArgs.header.to[0] == this._name) {
+                            this.terminate();
+                        }
+                        break;
+                }
+            },
+            onLifespanWarning: function () {
+            },
+            onTerminate: function () {
+                this.vicinity = null;
+            }
+        },
+        events: {
+            onHitEnemy: function(enemy) {
+                var msgArgs = {
+                    header: {
+                        name: "hit",
+                        to: [enemy.id],
+                        ttl: 3
+                    },
+                    "body" : {
+                        "text": enemy.id
+                    }
+                };
+                gameViewVicinity.postMessage({
+                    name: "msg", args: msgArgs
+                });
+
+                enemy.speed.x = enemy.speed.y = enemy.speed.z = 0;
+                enemy.currentDisplay.index = -1;
+                enemy.currentDisplay.instance = imageList[enemy.config.animation.hitImage];
+                enemy.isActive = false;
+                enemy.hitScore = game.engine.calculateScore(enemy.points,enemy.position,enemy.isBonus);
+
+                setTimeout(function(e) {
+                    e.currentDisplay.instance = null;
+                }, 1000, enemy);
+
+                game.engine.handleHit(enemy);
+            }
+        }
+    },
+    "simple-text": {
+        name: "simple-text",
+        type: "agent",
+        agent: {
+            name: name,
+            lifespan: 100,
+            pulseInterval: 0,
+            pulseDuration: 3000,
+            taskDelay: 10,
+            priorityManagerType: "round-robin",
+            behaviors: [{behavior: basicAnimationBehavior}],
+            duringBirth: function (this_agent) {
+                var config = tm_g.findOne(obstacleConfig, function (item) {
+                    return item.id == this_agent._name;
+                });
+
+                this_agent.remember({name: "speed", fact: config.speed});
+                this_agent.remember({name: "direction", fact: config.direction});
+                this_agent.remember({name: "position", fact: config.position});
+
+                this_agent.remember({ name: "xBounds", fact: gameConfig.bounds.x });
+                this_agent.remember({ name: "yBounds", fact: gameConfig.bounds.y });
+                this_agent.remember({ name: "zBounds", fact: gameConfig.bounds.z });
+
+                enemies.push(config);
+            },
+            onTerminate: function () {
+                this.vicinity = null;
+            }
+        }
+    },
+    "bomb": {
+        name: "bomb",
+        type: "agent",
+        animation: {
+            images: [
+                "../images/black_bomb.png"
+            ],
+            hitImage: "../images/black_bomb-hit.png"
+        },
+        agent: {
+            name: name,
+            lifespan: 100,
+            pulseInterval: 0,
+            pulseDuration: 3000,
+            taskDelay: 10,
+            priorityManagerType: "round-robin",
+            behaviors: [{behavior: basicMadAnimationBehavior}],
+            duringBirth: function (this_agent) {
+                var config = tm_g.findOne(obstacleConfig, function (item) {
+                    return item.id == this_agent._name;
+                });
+
+                config.original = {};
+
+                config.original.speed = {x:0, y:0, z:0};
+                util.copyCoordinates(config.speed, config.original.speed);
+                this_agent.remember({name: "speed", fact: config.speed});
+
+                config.original.direction = {x:"", y:"", z:""};
+                util.copyCoordinates(config.direction, config.original.direction);
+                this_agent.remember({name: "direction", fact: config.direction});
+
+                config.original.position = {x:0, y:0, z:0};
+                util.copyCoordinates(config.position, config.original.position);
+                this_agent.remember({name: "position", fact: config.position});
+
+                this_agent.remember({name: "targetLocation", fact: { x: 400, y: 180 , z: 0}});
+
+                this_agent.remember({ name: "xBounds", fact: gameConfig.bounds.x });
+                this_agent.remember({ name: "yBounds", fact: gameConfig.bounds.y });
+                this_agent.remember({ name: "zBounds", fact: gameConfig.bounds.z });
+
+                enemies.push(config);
+            },
+            onReceiveMessage: function(messageArgs) {
+                switch(messageArgs.header.name) {
+                    case "hit":
+                        if (messageArgs.header.to[0] == this._name) {
+                            this.terminate();
+                        }
+                        break;
+                }
+            },
+            onLifespanWarning: function () {
+            },
+            onTerminate: function () {
+                this.vicinity = null;
+            }
+        },
+        events: {
+            onHitEnemy: function(enemy) {
+                var msgArgs = {
+                    header: {
+                        name: "hit",
+                        to: [enemy.id],
+                        ttl: 3
+                    },
+                    "body" : {
+                        "text": enemy.id
+                    }
+                };
+                gameViewVicinity.postMessage({
+                    name: "msg", args: msgArgs
+                });
+
+                enemy.speed.x = enemy.speed.y = enemy.speed.z = 0;
+                enemy.currentDisplay.index = -1;
+                enemy.currentDisplay.instance = imageList[enemy.config.animation.hitImage];
+                enemy.isActive = false;
+                enemy.hitScore = (game.engine.score > 1000) ? -1000 : game.engine.score * -1;	// wipe current score
+                setTimeout(function(e) {
+                    e.currentDisplay.instance = null;
+                }, 1000, enemy);
+
+                game.engine.handleHit(enemy);
+            }
+        }
+    }
+
+};
+
+var obstacleConfig = [
+    { id: "gh-0", points: 100, level: 1, isActive: true,
+        position: { x: 200, y: -300 , z: 800}, speed: { x: 4, y: 4, z: 4}, direction: {x: "L", y: "D", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-ghost"]
+    },
+    { id: "gh-1", points: 100, level: 1, isActive: true,
+        position: { x: 400, y: -100, z: 400 }, speed: { x:5, y: 5, z: 5}, direction: {x: "R", y: "D", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-ghost"]
+    },
+    { id: "gh-2", type: "simple", behavior: basicAnimationBehavior, points: 100, level: 1, isActive: true,
+        position: { x: -200, y: 0, z: 500 }, speed: { x: 3, y: 4, z: 3}, direction: {x: "R", y: "D", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-ghost"]
+    },
+    { id: "gh-3", type: "simple", behavior: basicAnimationBehavior, points: 100, level: 1, isActive: true,
+        position: { x: 200, y: -100, z: 600 }, speed: { x: 3, y: 3, z:4}, direction: {x: "L", y: "U", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-ghost"]
+    },
+    { id: "gh-4", type: "simple", behavior: basicAnimationBehavior, points: 200, level: 1, isActive: true,
+        position: { x: 0, y: -600, z: 700 }, speed: { x: 4, y: 3, z: 3}, direction: {x: "R", y: "U", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-mad-ghost"]
+    },
+    { id: "gh-5", type: "simple", behavior: basicAnimationBehavior, points: 200, level: 1, isActive: true,
+        position: {  x: 800, y: -300, z: 800 }, speed: { x: 3, y: 4, z: 3}, direction: {x: "L", y: "D", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-mad-ghost"]
+    },
+    { id: "gh-6", type: "simple", behavior: basicAnimationBehavior, points: 200, level: 1, isActive: true,
+        position: { x: -400, y: -400, z: 900 }, speed: { x: 4, y: 3, z: 4}, direction: {x: "R", y: "U", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-mad-ghost"]
+    },
+    { id: "gh-7", type: "simple", behavior: basicAnimationBehavior, points: 0, level: 1, isActive: true,
+        position: { x: 300, y: 200, z: 500 }, speed: { x: 1, y: 1, z: 1}, direction: {x: "R", y: "U", z:"C"},
+        currentDisplay: {instance: {content: "Get those ghosts", font: "bold 18pt Courier", fillStyle: "#ffffff"}, index: 0, type: "text"},
+        config: obstacleTypeConfig["simple-text"],
+        isFriendly: true
+    },
+    { id: "gh-8", type: "simple", behavior: basicAnimationBehavior, points: 200, level: 2, isActive: true,
+        position: { x: -350, y: -350, z: 350 }, speed: { x: 1, y: 1, z: 1}, direction: {x: "R", y: "U", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-mad-ghost"]
+    },
+    { id: "gr-0", type: "simple", behavior: basicAnimationBehavior, points: 200, level: 2, isActive: true,
+        position: { x: -450, y: -350, z: 550 }, speed: { x: 3, y: 3, z: 3}, direction: {x: "R", y: "U", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["grim-reaper"]
+    },
+    { id: "gr-1", type: "simple", behavior: basicAnimationBehavior, points: 200, level: 3, isActive: true,
+        position: { x: 450, y: 350, z: 850 }, speed: { x: 3, y: 3, z: 3}, direction: {x: "L", y: "D", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["grim-reaper"]
+    },
+    { id: "gr-2", type: "simple", behavior: basicAnimationBehavior, points: 200, level: 4, isActive: true,
+        position: { x: -450, y: 550, z: 450 }, speed: { x: 4, y: 4, z: 3}, direction: {x: "R", y: "U", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["grim-reaper"]
+    },
+    { id: "oct-0", type: "simple", behavior: basicAnimationBehavior, points: 150, level: 2, isActive: true,
+        position: { x: 0, y: 200, z: 450 }, speed: { x: 3, y: 3, z: 3}, direction: {x: "R", y: "U", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["octo-ghost"]
+    },
+    { id: "oct-1", type: "simple", behavior: basicAnimationBehavior, points: 150, level: 3, isActive: true,
+        position: { x: -100, y: 400, z: 700 }, speed: { x: 3, y: 3, z: 3}, direction: {x: "L", y: "D", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["ghost-stay-away"]
+    },
+    { id: "britt-1", type: "simple", behavior: basicAnimationBehavior, points: 300, level: 5, isActive: true,
+        position: { x: 440, y: 290, z: 100 }, speed: { x: 4, y: 4, z: 4}, direction: {x: "R", y: "D", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["ghost-stay-away"]
+    },
+    { id: "britt-2", type: "simple", behavior: basicAnimationBehavior, points: 300, level: 6, isActive: true,
+        position: { x: 300, y: 500, z: 100 }, speed: { x: 5, y: 5, z: 5}, direction: {x: "L", y: "U", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["octo-ghost"]
+    },
+    { id: "bomb-0", type: "simple", behavior: basicAnimationBehavior, points: -1000, level: 1, isActive: true,
+        position: { x: 300, y: 400, z: 1000 }, speed: { x: 2, y: 2, z: 3}, direction: {x: "L", y: "U", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["bomb"],
+		isFriendly: true
+    },
+    { id: "bomb-1", type: "simple", behavior: basicAnimationBehavior, points: -1000, level: 4, isActive: true,
+        position: { x: 120, y: 280, z: 100 }, speed: { x: 3, y: 3, z: 3}, direction: {x: "R", y: "U", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["bomb"],
+        isFriendly: true
+    },
+    { id: "bomb-2", type: "simple", behavior: basicAnimationBehavior, points: -1000, level: 6, isActive: true,
+        position: { x: -330, y: -230, z: 300 }, speed: { x: 1, y: 1, z: 5}, direction: {x: "L", y: "D", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["bomb"],
+        isFriendly: true
+    }
+];
+
+
+var obstacleConfigTest = [
+    { id: "gh-0", points: 100, level: 1, isActive: true,
+        position: { x: -300, y: 0 , z: 100}, speed: { x: 1, y: 0, z: 0}, direction: {x: "L", y: "D", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-ghost"]
+    },
+    { id: "gh-8", type: "simple", behavior: basicAnimationBehavior, points: 300, level: 2, isActive: true,
+        position: { x: -350, y: 0, z: 350 }, speed: { x: 1, y: 0, z: 0}, direction: {x: "R", y: "U", z:"C"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["simple-mad-ghost"]
+    },
+    { id: "oct-0", type: "simple", behavior: basicAnimationBehavior, points: 150, level: 1, isActive: true,
+        position: { x: 0, y: -100, z: 450 }, speed: { x: 1, y: 0, z: 2}, direction: {x: "R", y: "U", z:"F"},
+        currentDisplay: {instance: null, index: 0, type: "image"},
+        config: obstacleTypeConfig["octo-ghost-stay-away"]
+    }
+];
+
+
+var enemies = [];
+
+var xMap = [];
+var xMapAll = [];
+var yMap = [];
+var hasInited = false;
+var yaw, pitch, roll;
+
+var x1,y1; //scope position
+var factor = 5;
+
+var gImage;
+var debug;
+
+
+var xFactor = 0;
+var yFactor = 0;
+var xPanFactor = xFactor;
+var yPanFactor = yFactor;
+var imageList = {};
+var ammoFired = [];
+var ammoDone = [];
+
+var firstSceneInit = false;
+
+// globals (end)
+
+var cnt = 0;
+
+// app init (start)
+function gh_app_init() {
+
+    try {
+        debug = jQuery.urlParam("dbg");
+        if (debug) {
+            $("#console").removeClass("invisible");
+        }
+    }
+    catch(error) {
+    }
+
+
+    try {
+        var sim = jQuery.urlParam("sim");
+        if (sim) {
+            gameConfig.simulate = true;
+        }
+    }
+    catch(error) {
+    }
+
+    if (/mobi/i.test(navigator.userAgent) && !location.hash) {
+        util.writeToConsole(/Chrome/i.test(navigator.userAgent));
+
+        if (navigator.userAgent.search("Version/7.0") == -1) {  // Safari
+            if (!pageYOffset)   // remove address bar
+            {
+                window.scrollTo(0,document.body.scrollHeight - 100);
+            }
+        }
+
+        if (/Chrome/i.test(navigator.userAgent)) {  // Chrome/Android
+            this.isAndroid = true;
+            factor = 1;
+            gameConfig.mode.type = "limited";
+            setTimeout(game.engine.onTick,1000);
+        }
+
+    }
+
+    if(typeof(Storage) !== "undefined") {
+        gameConfig.hasLocalStorage = true;
+    }
+
+    var cvs = document.getElementById("canvas1");
+    if (cvs.getContext) {
+        // Specify 2d canvas type.
+        var ctxPre = cvs.getContext("2d");
+        ctxPre.font = "bold 24pt Courier";
+        ctxPre.fillStyle = "white";
+        ctxPre.fillText("Loading...",200,200);
+    }
+
+    util.loadImages();
+
+    ("DeviceOrientationEvent" in window)
+            ? window.addEventListener('deviceorientation', deviceOrientationHandler, false)
+            : alert("Your browser does not support device orientation.");
+
+
+    var useSoundEntry = util.getLocalStorage(gameConfig.storage.keys.USE_SOUND);
+    if (useSoundEntry) {
+        gameConfig.sound.useSound = (useSoundEntry == "true");
+    }
+    else {
+        util.setLocalStorage(gameConfig.storage.keys.USE_SOUND,gameConfig.sound.useSound);
+    }
+
+    var showedStartPage = false; //localStorage[gameConfig.startPage.wasShown];
+    if (!showedStartPage) {
+
+        $("#startPage").dialog({
+            modal: true,
+            draggable: false,
+            resizable: false,
+            position: ['center', 'top'],
+            show: 'blind',
+            hide: 'blind',
+            width: 900,
+            dialogClass: 'ui-dialog-osx',
+            title: "Get those Ghosts",
+            open: function() {
+                $("#mainImage").attr("src",gameConfig.startPage.mainImage);
+
+            },
+            buttons: {
+                "start": function() {
+
+                    game = new GhostHunterGame();
+                    game.init();
+
+                    $(this).dialog("close");
+                },
+                "cancel": function() {
+                    var cvs = document.getElementById("canvas1");
+                    if (cvs.getContext) {
+                        // Specify 2d canvas type.
+                        var ctxPre = cvs.getContext("2d");
+                        ctxPre.clearRect(0, 0, cvs.width, cvs.height);
+                        ctxPre.font = "bold 18pt Courier";
+                        ctxPre.fillStyle = "white";
+                        ctxPre.fillText("Cancelled.   Reload page and hit START to play.",50,200);
+                    }
+
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+    else {
+        game = new GhostHunterGame();
+        game.init();
+    }
+
+}
+// app init (end)
+
+// app cache (start)
+function gh_checkForUpdate()
+{
+    if (window.applicationCache != undefined && window.applicationCache != null)
+    {
+        window.applicationCache.addEventListener('updateready', gh_updateApplication);
+    }
+}
+
+function gh_updateApplication(event)
+{
+    if (window.applicationCache.status != 4) return;
+    window.applicationCache.removeEventListener('updateready', gh_updateApplication);
+    window.applicationCache.swapCache();
+    window.location.reload();
+}
+
+gh_checkForUpdate();
+// app cache (end)
+
+var Timer = function() {
+    this.tick;
+    this.onTick;
+    this.onZero;
+    this._timer;
+
+    this.start = function(start, onTick, onZero) {
+        this.tick = start;
+        this.onTick = onTick;
+        this.onZero = onZero;
+
+        this._timer = setInterval(function(ths) {
+            ths.tick--;
+            if (ths.onTick) {
+                ths.onTick(ths.tick);
+            }
+
+            if (ths.tick <= 0 || game.isLevelComplete) {
+                ths.stop();
+
+                if (ths.tick <= 0) {
+                    if (ths.onZero) {
+                        ths.onZero();
+                    }
+                }
+            }
+        }, 1000, this);
+    };
+
+    this.stop = function() {
+        clearInterval(this._timer);
+    };
+};
+
+
+var GameEngine = (function() {
+    return function() {
+        this.score = 0;
+        this.numEnemies = 0;
+        this.initializedOrientation = false;
+    }
+})();
+
+GameEngine.prototype = {
+    setupArrays: function() {
+        //debugger;
+
+        // setup circular linked list
+        var firstNode = null;
+        var lastNode = null;
+        for (var i=0; i<360; i++) {
+            var node = {id: i, xFactor: 0, next: null, prev: null};
+            if (lastNode) {
+                node.prev = lastNode;
+                lastNode.next = node;
+                lastNode = node;
+            }
+            else {
+                firstNode = lastNode = node;
+            }
+        }
+        lastNode.next = firstNode;
+        firstNode.prev = lastNode;
+
+        // go to device calculated center
+        node = firstNode;
+        while (baseX && node.id != baseX) {
+            node = node.next;
+        }
+
+        var xBounds = gameConfig.bounds.x;
+
+        node.xFactor = 0;
+        var workNode = node.prev;
+        // subtract left for 180
+        for (var i= 0,j= -1; i<180; i++,j--) {
+            var xfact = j * factor;  // 5 is factor
+            workNode.xFactor = xfact;
+            workNode = workNode.prev;
+        }
+        // add right for 179
+        workNode = node.next;
+        for (var i= 1; i<180; i++) {
+            xfact = i * factor;
+            workNode.xFactor = xfact;
+            workNode = workNode.next;
+        }
+
+        // setup array and fill with xFactor values
+        xMap = new Array(360);
+
+        //  synchronize array
+        var travNode = firstNode;
+        for (var j=0; j<360; j++) {
+            xMap[j] = travNode.xFactor;
+            travNode = travNode.next;
+        }
+
+        // setup yMap
+        yMap = new Array(180);
+        yMap[0] = 0;
+        for (var i=1, j=1; i<=180; i++, j++) {
+            yMap[i] = j;
+        }
+
+    },
+
+    // shooting (start)
+    fireWeapon: function(evt) {
+        evt.preventDefault();
+
+        if (!game.isOver) {
+            var ammo = {x: wx, y: wy, speed: ammoSpeed, size: ammoSize};
+            ammoFired.push(ammo);
+
+            game.engine.moveAmmo.call(game.engine);
+
+            if (gameConfig.sound.useSound) {
+                if (typeof(myAudio) == 'undefined' || myAudio == null) {
+                    myAudio = new Audio(gameConfig.sound.musicFile);
+
+                    myAudio.addEventListener('ended', function() {
+                        if (!game.isOver && gameConfig.sound.useSound) {
+                            this.src = this.src;
+                            this.play();
+                        }
+                    }, false);
+
+                    myAudio.addEventListener('canplay', function(e) {
+                        //myAudio.play();
+                    }, false);
+
+                    //myAudio.play();
+                }
+            }
+        }
+    },
+
+    moveAmmo: function() {
+        if (ammoFired.length) {
+
+            // move one unit for each ammo per call.
+            for (var i=0; i<ammoFired.length; ) {
+                var ammo = ammoFired[i];
+
+                if (!this.hitTargetOrCompletelyMissed(ammo)) {
+                    var oldFillStyle = ctx.fillStyle;
+                    ctx.beginPath();
+                    ctx.arc(ammo.x, ammo.y, ammo.size, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'red';
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillStyle = oldFillStyle;
+
+                    ammo.y -= ammo.speed;    // move ammo
+                    ammo.size -= ammoSpeed * 0.05;
+                    i++;
+                }
+                else {
+                    ammoFired.splice(i, 1); // clear done ammo
+                }
+            }
+        }
+    },
+
+    hitTargetOrCompletelyMissed: function(ammo) {
+        if (ammo.y < 0 || ammo.size <= 0) {
+            return true;
+        }
+
+        // only hit if within scope
+        if (!this.hitTestPoint(x1, y1, ammo.size, ammo.size, ammo.x, ammo.y)) {
+            return false;
+        }
+
+        for (var i=0; i<enemies.length; i++) {
+            var enemy = enemies[i];
+            if (enemy.isActive) {
+                var enemyPos = enemy.position;
+
+                // get dimensions of current enemy image
+                var w = enemyPos.width;
+                var h = enemyPos.height;
+                var evts = enemy.config.events;
+                if (evts) {
+                    var onHitEnemy = evts.onHitEnemy;
+
+                    if (this.hitTestPoint(enemyPos.actualX, enemyPos.actualY, w, h, ammo.x, ammo.y)) {
+                        if (onHitEnemy) {
+                            onHitEnemy(enemy);
+                        }
+
+                        return true;
+                    }
+                }
+
+            }
+        }
+
+        return false;
+    },
+
+    hitTestPoint: function(x1, y1, w1, h1, x2, y2)
+    {
+        //x1, y1 = x and y coordinates of object 1
+        //w1, h1 = width and height of object 1
+        //x2, y2 = x and y coordinates of object 2 (usually midpt)
+        if ((x1 <= x2 && x1+w1 >= x2) &&
+                (y1 <= y2 && y1+h1 >= y2))
+            return true;
+        else
+            return false;
+    },
+
+    handleHit: function(enemy) {
+        if (!this.isOver) {
+            this.score += enemy.hitScore;
+            $("#scoreValue").text(this.score);
+
+			if (!enemy.isFriendly) {
+				this.numEnemies--;
+			}
+            $("#enemiesValue").text(this.numEnemies);
+
+            if (this.numEnemies == 0) {
+                game.isLevelComplete = true;
+                $("#messageValue").text("Level Completed");
+
+                setTimeout(function(ths) {
+                    game.onLevelCompleted();
+                },3000, this);
+            }
+        }
+
+    },
+// shooting (end)
+
+    calculateScore: function(points, position, isBonus) {
+        var bigBonus = 0;
+        if (isBonus) {
+            points += 500;
+
+            if (game.engine.numEnemies == 1) {  // if bonus is last enemy then add 500
+                bigBonus = 750;
+            }
+        }
+
+        var z = position.z;
+        var pts = points;
+
+        if (z > 333 && z <= 667) {
+            pts = points * 2;
+        }
+        else if (z > 667) {
+            pts = points * 3;
+        }
+
+        pts += bigBonus;
+
+        return pts;
+    },
+
+    draw: function() {
+        if (!firstSceneInit) {
+            return;
+        }
+
+        var x, y;
+
+        //debugger;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+        ctx.drawImage(gImageBackground,xPanFactor, yPanFactor, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        if (debug) {
+            ctx.font = "bold 12pt Courier";
+            ctx.fillText("xp:" + xPanFactor + ",yp:" + yPanFactor,500,100);
+        }
+
+        var zBounds = gameConfig.bounds.z;
+
+        for (var i = 0; i < enemies.length; i++) {
+            var enemy = enemies[i];
+            var enemyPos = enemy.position;
+
+            enemyPos.actualX = enemyPos.x + xFactor;
+            enemyPos.actualY = enemyPos.y + yFactor;
+            enemyPos.actualZ = enemyPos.z;
+
+
+            var text = "id: " + enemy.id + ", x: " + enemyPos.actualX + ":" + enemy.direction.x +
+                    ", y: " + enemyPos.actualY + ":" + enemy.direction.y +  ", z: " + enemyPos.actualZ + ":" + enemy.direction.z
+                    + "[" + enemyPos.x + "," + enemyPos.y + "," + enemyPos.z + "]";
+
+            var canProcess = false;
+            var img;
+            var currentDisplay = enemy.currentDisplay;
+            switch (currentDisplay.type) {
+                case "image":
+                    img = currentDisplay.instance;
+                    canProcess = (img && img.width > 0);
+                    break;
+                case "text":
+                    canProcess = (currentDisplay.instance.content != undefined);
+                    break;
+            }
+
+            // get dimensions of current enemy image
+            if (canProcess) {
+                if (!enemy.isActive && !enemy.isFriendly) {
+                    currentDisplay.instance = imageList[enemy.config.animation.hitImage];
+                    img = currentDisplay.instance;
+                }
+
+                switch (currentDisplay.type) {
+                    case "image":
+                        var w = img.width;
+                        var h = img.height;
+
+                        // adjust for distance
+                        var closenessFactor = (enemyPos.z / zBounds.max); //* factor;
+                        w -= w * closenessFactor;
+                        h -= h * closenessFactor;
+                        enemyPos.width = w;
+                        enemyPos.height = h;
+
+                        ctx.drawImage(img,enemyPos.actualX, enemyPos.actualY, enemyPos.width, enemyPos.height);
+
+                        if (enemy.hitScore) {
+                            ctx.font = "bold 30pt Courier";
+                            var text = enemy.hitScore;
+                            if (enemy.hitScore > 0) {
+                                ctx.fillStyle = "red";
+                            }
+                            else {
+                                ctx.fillStyle = "yellow";
+                                text = Math.abs(enemy.hitScore) + " points lost";
+                            }
+
+                            ctx.fillText(text,enemyPos.actualX,enemyPos.actualY+10);
+                        }
+                        else if (enemy.isBonus) {
+                            ctx.font = "bold 30pt Courier";
+                            ctx.fillStyle = "red";
+                            ctx.fillText("Bonus",enemyPos.actualX,enemyPos.actualY+10);
+                        }
+                        break;
+                    case "text":
+                        var textData = currentDisplay.instance;
+                        ctx.font = textData.font;
+                        ctx.fillStyle = textData.fillStyle;
+                        ctx.fillText(textData.content,enemyPos.actualX,enemyPos.actualY);
+                        break;
+                }
+
+                if (debug) {
+                    ctx.font = "bold 14pt Courier";
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillText(text,enemyPos.actualX,enemyPos.actualY+10);
+                }
+            }
+
+        }
+
+        this.drawScope();
+
+        this.moveAmmo();
+
+        if (game.isOver) {
+            game.showHighScores();
+        }
+
+    },
+
+    drawScope: function() {
+
+        var text = "x: " + x1 + ",y: " + y1;
+
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.arc(x1, y1, 20, 0, 2 * Math.PI);
+        ctx.moveTo(x1-30,y1);
+        ctx.lineTo(x1+30,y1);
+        ctx.moveTo(x1,y1-30);
+        ctx.lineTo(x1,y1+30);
+        ctx.stroke();
+        ctx.closePath();
+
+        if (debug) {
+            text = "yaw: " + yaw + ",roll: " + roll + " ,x1: " + x1 + ",y1: " + y1;
+            ctx.font = "bold 18pt Arial";
+            ctx.fillText(text,x1,y1+10);
+            text = "xMap: " + xFactor + ", yMap: " + yFactor;
+            ctx.fillText(text,x1,y1+40);
+            text = "xMin: " + gameConfig.bounds.x.min + ", xMax: " + gameConfig.bounds.x.max;
+            ctx.fillText(text,x1,y1+70);
+            text = "yMin: " + gameConfig.bounds.y.min + ", yMax: " + gameConfig.bounds.y.max;
+            ctx.fillText(text,x1,y1+100);
+
+        }
+    },
+
+    onGyroEvent: function(eventData) {
+        if (!eventData.alpha) {
+            return;
+        }
+
+        var info, xyz = "[X, Y, Z]";
+        var x = 0, y = 0;
+
+        yaw = Math.floor(eventData.alpha);
+        pitch = Math.floor(eventData.beta);
+        roll = Math.floor(eventData.gamma);
+
+        // recalculate enemy positions as offset from original
+        // adjust for issue on Nexus LG/Android
+        if (roll <= 0) {
+            baseX = yaw;
+            baseY = roll;
+        }
+        else {
+            if (!baseX) { baseX = yaw;}
+            baseY = -90 - (91 - roll);
+        }
+
+        if (!hasInited) {
+            if (baseX != 0 && baseY != 0) {
+                hasInited = true;
+                game.engine.setupArrays();
+            }
+
+        }
+
+        xFactor = xMap[baseX];
+        yFactor = (yMap[Math.abs(baseY)] * factor);
+        xPanFactor = baseX * 1;
+        yPanFactor = 1000 - yMap[Math.abs(baseY)] * factor;  // 1000 estimated max height
+
+        /*
+         var text = "orientation called " + cnt + "; " + xFactor + "; " + yFactor + "; " + xPanFactor + "; " + yPanFactor;
+         cnt++;
+         ctx.font = "bold 14pt Courier";
+         ctx.fillText(text,30,40);
+         */
+
+        if (hasInited) {
+            if (!game.engine.initializedOrientation) {
+                game.scene.orientEnemies();
+                game.scene.init({level: game.level, score: game.score, isRestart: false});
+                game.engine.initializedOrientation = true;
+            }
+        }
+
+        game.engine.draw();
+
+    },
+
+    onTick:  function(eventData) {
+        game.engine.draw();
+        var interval = (game.isOver) ? 2000: 0;
+        setTimeout(game.engine.onTick,interval);
+    }
+
+};
+
+
+var GhostHunterGame = (function (constructorArgs) {
+    return function (constructorArgs) {
+        this.level = 1;
+        this.isOver = false;
+        this.isLevelComplete = false;
+        this.timer = new Timer();
+        this.engine = new GameEngine();
+        this.highScores = null;
+        this.isAndroid = false;
+
+        this.init = function() {
+
+            // Get the canvas element.
+            canvas = document.getElementById("canvas1");
+            if (canvas.getContext) {
+
+                firedWeapon = false;
+
+                // Specify 2d canvas type.
+                ctx = canvas.getContext("2d");
+                x1 = canvas.width /  2;
+                y1 = canvas.height /  2;
+
+                wx = x1; // center
+                wy = canvas.height;  // start at bottom
+                ammoSpeed = 20;
+                ammoSize = 20;
+
+                ctx.webkitImageSmoothingEnabled = false;
+                ctx.mozImageSmoothingEnabled = false;
+                ctx.imageSmoothingEnabled = false; //future
+            }
+
+            canvas.addEventListener("touchstart",this.onTouchStart,false);
+
+            var main = document.getElementById("main");
+            main.addEventListener("touchstart",game.onTouchStart,false);
+
+            var img1 = new Image(); // Create a new blank image.
+            img1.src = "../images/Anonymous_led_rounded_h_grey.png";
+            img1.onload = function() {
+                var c1 = document.getElementById("btnFireL");
+                var c1_context = c1.getContext("2d");
+                c1_context.drawImage(img1,0, 0, img1.width, img1.height, 0, 0, c1.width, c1.height);
+
+                c1.addEventListener("touchstart",game.engine.fireWeapon,false);
+                c1.addEventListener("click",game.engine.fireWeapon,false);
+            };
+
+            var img2 = new Image(); // Create a new blank image.
+            img2.src = "../images/Anonymous_led_rounded_h_grey.png";
+            img2.onload = function() {
+                var c1 = document.getElementById("btnFireR");
+                var c1_context = c1.getContext("2d");
+                c1_context.drawImage(img2,0, 0, img2.width, img2.height, 0, 0, c1.width, c1.height);
+
+                c1.addEventListener("touchstart",game.engine.fireWeapon,false);
+                c1.addEventListener("click",game.engine.fireWeapon,false);
+            };
+
+            $("#cbxSound").prop('checked', gameConfig.sound.useSound);
+
+            // setup fire weapon
+            $(".Trigger").click(this.engine.fireWeapon);
+            $("#btnRestart").click(function() {
+                setTimeout(function() {
+                    game.onRestart();
+                },0);
+            });
+
+            $("#btnOptions").click(function() {
+                game.stopTick = true;
+
+                $("#dlgOptions").dialog({
+                    modal: true,
+                    draggable: false,
+                    resizable: false,
+                    position: ['center', 'top'],
+                    show: 'blind',
+                    hide: 'blind',
+                    width: 600,
+                    dialogClass: 'ui-dialog-osx',
+                    buttons: {
+                        "close": function() {
+                            var useSound = $("#cbxSound").is(":checked");
+                            gameConfig.sound.useSound = useSound;
+                            util.setLocalStorage(gameConfig.storage.keys.USE_SOUND,gameConfig.sound.useSound);
+
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            });
+
+            var menu = document.getElementById("controlPanel");
+            menu.addEventListener('touchmove', function(event) {
+                event.preventDefault();
+            }, false);
+
+            this.getHighScores();
+
+            if (gameConfig.mode.type == "limited") {
+                gameConfig.bounds.y = {min: -100, max: 200};
+            }
+
+            this.scene = new Scene({level: this.level});
+
+            if (gameConfig.simulate) {
+                simulateGeoStatic();
+            }
+
+        };
+
+    }
+
+})();
+
+GhostHunterGame.prototype = {
+
+    stopMusic: function() {
+        if (gameConfig.sound.useSound) {
+            if (typeof(myAudio) != 'undefined' && myAudio != null) {
+                myAudio.pause();
+            }
+        }
+    },
+
+    startMusic: function() {
+        if (gameConfig.sound.useSound) {
+            if (typeof(myAudio) != 'undefined' && myAudio != null) {
+                //myAudio.play();
+            }
+        }
+    },
+
+
+    onTouchStart: function(evt) {
+        evt.preventDefault();
+        var touchX = evt.targetTouches[0].pageX;
+        var touchY = evt.targetTouches[0].pageY;
+        ctx.fillText('x=' + touchX + ',y=' + touchY,20,400);
+    },
+
+    onLevelCompleted: function() {
+        this.isLevelComplete = true;
+        this.timer.stop();
+        var levelCompleted = this.level;
+        this.level++;
+        this.scene.init({level: this.level, score: this.score, isRestart: false});
+        $("#messageValue").text("");
+
+        var main = document.getElementById("main");
+        main.addEventListener("touchstart",game.onTouchStart,false);
+    },
+
+    onGameOver: function() {
+        if (!this.isLevelComplete && this.engine.numEnemies > 0) {
+            this.isOver = true;
+            gameViewVicinity.stopAgents();
+            $("#btnRestart").removeClass("invisible");
+            $("#btnOptions").removeClass("invisible");
+            $("#gh-sharing").removeClass("invisible");
+            this.timer.stop();
+
+            $("#messageValue").text("GAME OVER");
+
+            if (typeof(myAudio) != 'undefined' && myAudio != null) {
+                myAudio.pause();
+            }
+            myAudio = null;
+
+            window.scrollTo(0,50);  // show bottom
+
+            this.storeHighScores();
+        }
+
+
+        var main = document.getElementById("main");
+        main.removeEventListener("touchstart",game.onTouchStart,false);
+    },
+
+    onRestart: function() {
+        game.isOver = false;
+        this.engine.score = 0;
+        this.level = 1;
+        this.scene.init({level: this.level, score: this.score, isRestart: true});
+        $("#messageValue").text("");
+        $("#levelValue").text("");
+        $("#enemiesValue").text("");
+        $("#scoreValue").text("");
+        $("#timerValue").text("");
+
+        var main = document.getElementById("main");
+        main.addEventListener("touchstart",game.onTouchStart,false);
+    },
+
+    storeHighScores: function() {
+        setTimeout(function(ths) {
+
+            if (!ths.highScores) {
+                ths.highScores = [];
+            }
+
+            ths.highScores.push(ths.engine.score);
+
+            // sort scores descending
+            ths.highScores.sort(function(a, b) {
+                return b - a;
+            });
+
+            if (ths.highScores.length > 5) {
+                ths.highScores.pop();
+            }
+
+            localStorage.setItem('gh.highScores', JSON.stringify(ths.highScores));
+        }, 2000, this);
+    },
+
+    getHighScores: function() {
+        this.highScores = JSON.parse(localStorage.getItem('gh.highScores'));
+    },
+
+    showHighScores: function() {
+        if (this.highScores) {
+            ctx.fillStyle = "#DBA901";
+
+            var posX = x1 - 100;
+            var posY = y1 - 100;
+            var text = "High Scores";
+            ctx.font = "bold 24pt Arial";
+            ctx.fillText(text,posX,posY);
+
+            for (var i=0; i<this.highScores.length; i++) {
+                var score = this.highScores[i];
+
+                posY += 40;
+                ctx.font =  "bolder 18pt Arial";
+                text = score;
+
+                ctx.fillText(text,posX,posY);
+            }
+        }
+    }
+};
+
+var gameViewVicinity;
+var modelVicinity;
+
+var Scene = (function (constructorArgs) {
+    return function (constructorArgs) {
+        this.name = util.getSceneName(constructorArgs.level);
+
+        this.init = function(constructorArgs) {
+            if (typeof(gameViewVicinity) == 'undefined') {
+                // Create global environment
+                gameViewVicinity = TM_gents__Vicinity.getVicinity({ name: "gameViewVicinity" });
+
+                gameViewVicinity.subscribe({subscriber: {
+                    onMessage: function(messageArgs) {
+                        util.writeToConsole(messageArgs.body.text);
+                    }
+                }});
+
+                gameViewVicinity.onAgentMove = function(name, this_agent) {
+                    util.updateImage(name);
+                };
+            }
+
+            this.initLevel(constructorArgs);
+        }
+
+        this.loadLevel = function(level, isRestart) {
+            game.engine.numEnemies = 0;
+
+            var bonusId = util.getRandomInt(1,obstacleConfig.length);
+
+            for (var i=0; i<obstacleConfig.length; i++) {
+                var obstacleStart = obstacleConfig[i];
+                var level = obstacleStart.level;
+
+                if (level <= game.level) {
+
+                    var name = obstacleStart.id;
+                    var type = obstacleStart.config.type;
+
+                    switch (type) {
+                        case "agent":
+                            var agentConfig = obstacleStart.config.agent;
+                            var a1 = gameViewVicinity.loadEntity(name, type, agentConfig, isRestart, isRestart);
+                            if (!obstacleStart.isFriendly) {
+                                game.engine.numEnemies++;
+                            }
+
+                            // reset animation
+                            obstacleStart.isActive = true;
+                            var config = obstacleStart.config;
+                            var animation = config.animation;
+                            if (animation) {
+                                var currentDisplay = obstacleStart.currentDisplay;
+                                currentDisplay.instance = imageList[animation.images[0]];
+                                currentDisplay.index = 0;
+                            }
+                            obstacleStart.hitScore = null;
+
+                            // reset positions
+                            if (isRestart || level <= game.level) {
+                                var original = obstacleStart.original;
+
+                                if (original) {
+                                    util.copyCoordinates(original.speed,obstacleStart.speed);
+                                    a1.remember({name: "speed", fact: obstacleStart.speed});
+
+                                    util.copyCoordinates(original.direction,obstacleStart.direction);
+                                    a1.remember({name: "direction", fact: obstacleStart.direction});
+
+                                    util.copyCoordinates(original.position,obstacleStart.position);
+                                    a1.remember({name: "position", fact: obstacleStart.position});
+                                }
+
+                            }
+
+                            // handle bonus
+                            obstacleStart.isBonus = (game.engine.numEnemies == bonusId && !obstacleStart.isFriendly);
+                            break;
+                        case "text":
+                            enemies.push(obstacleStart);
+                            break;
+                    }
+                }
+                else {
+                    obstacleStart.isActive = false;
+                    obstacleStart.currentDisplay.instance = null;
+                }
+            }
+
+            $("#enemiesValue").text(game.engine.numEnemies);
+        }
+    }
+
+})();
+
+Scene.prototype = {
+    initLevel: function(args) {
+        game.isLevelComplete = false;
+
+        if (typeof(gImageBackground) == 'undefined') {
+            gImageBackground = new Image();
+            gImageBackground.alt = "Loading ...";
+            firstSceneInit = true;
+        }
+
+        var background = util.getBackgroundImage(args.level);
+        var newName = background.substring(background.lastIndexOf("/")+1)
+        var oldName = (gImageBackground.src) ? gImageBackground.src.substring(gImageBackground.src.lastIndexOf("/")+1) : "";
+
+        if (newName != oldName) {
+            gImageBackground.src = background;
+        }
+
+        $("#levelValue").text(args.level);
+        $("#scoreValue").text(args.score);
+        $("#btnRestart").addClass("invisible");
+        $("#btnOptions").addClass("invisible");
+        $("#gh-sharing").addClass("invisible");
+
+        this.loadLevel(args.level, args.isRestart);
+
+        var time = util.getTimeLimit(args.level);
+        game.timer.start(
+                time,
+                function(tick) {
+                    $("#timerValue").text(tick);
+                },
+                function () {
+                    if (!game.isLevelComplete && game.engine.numEnemies > 0) {
+                        game.onGameOver();
+                    }
+                }
+        );
+    },
+
+    orientEnemies: function() {
+        for (var i=0; i<obstacleConfig.length; i++) {
+            var config = obstacleConfig[i];
+            var id = config.id;
+
+            this.calibrateEntity(config);
+        }
+    },
+
+    moveNearToShooter: function(enemy, obstacleConfig, num) {
+        var position = obstacleConfig.position;
+        position.x = (xFactor > 0) ? (100 * num) - xFactor : (100 * num) + Math.abs(xFactor);
+
+        enemy.remember({name: "position", fact: obstacleConfig.position});
+    },
+
+    calibrateEntity: function(obstacleConfig) {
+        var position = obstacleConfig.position;
+        position.x = x1 + position.x;  // center + original position
+    }
+};
+
+var util = {
+    getGameConfigRow: function(levelID) {
+        var config = tm_g.findOne(gameConfig.level, function (item) {
+            return item.id == levelID;
+        });
+
+        if (!config) {
+            config = gameConfig.level[0]; // default
+        }
+
+        return config;
+    },
+
+    getBackgroundImage: function(levelID) {
+        var config = util.getGameConfigRow(levelID);
+
+        return config.background;
+    },
+
+    getSceneName: function(levelID) {
+        var config = util.getGameConfigRow(levelID);
+
+        return config.scene;
+    },
+
+    getTimeLimit: function(levelID) {
+        var config = util.getGameConfigRow(levelID);
+
+        return config.time;
+    },
+
+    loadImages: function() {
+        // load images
+        for (var i=0; i<obstacleConfig.length; i++) {
+            var setup = obstacleConfig[i];
+            var animation = setup.config.animation;
+            if (animation) {
+                var animationImages = animation.images;
+                var hitImgPath = animation.hitImage;
+                var currentDisplay = setup.currentDisplay;
+
+                for (var j=0; j<animationImages.length; j++) {
+                    var imgPath = animationImages[j];
+                    if (!imageList[imgPath]) {
+                        var img = new Image(); // Create a new blank image.
+                        img.src = imgPath;
+                        imageList[imgPath] = img;
+                    }
+
+                    if (j == 0) {
+                        if (currentDisplay.type == "image") {
+                            currentDisplay.instance = imageList[imgPath];
+                        }
+                    }
+                }
+
+                if (!imageList[hitImgPath]) {
+                    var img = new Image(); // Create a new blank image.
+                    img.src = hitImgPath;
+                    imageList[hitImgPath] = img;
+                }
+            }
+        }
+    },
+
+    updateImage: function(name, this_agent) {
+        var setup = tm_g.findOne(obstacleConfig, function (item) {
+            return item.id == name;
+        });
+
+        if (setup) {
+            var currentDisplay = setup.currentDisplay;
+            var animation = setup.config.animation;
+            if (animation) {
+                var animationImages = animation.images;
+
+                if (animationImages.length > 0) {
+                    currentDisplay.index++;
+                    if (currentDisplay.index >= animationImages.length) {
+                        currentDisplay.index = 0;
+                    }
+
+                    currentDisplay.instance = imageList[animationImages[currentDisplay.index]];
+                }
+            }
+        }
+    },
+
+    copyCoordinates: function(from,to) {
+        to.x = from.x;
+        to.y = from.y;
+        to.z = from.z;
+    },
+
+    writeToConsole: function(text) {
+        if (debug) {
+            $("#console").text(text);
+        }
+    },
+
+    getRandomInt: function(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+
+    getLocalStorage: function(key) {
+        return localStorage[key];
+    },
+
+    setLocalStorage: function(key,value) {
+        try {
+            localStorage[key] = value;
+        }
+        catch (err) {
+            util.writeToConsole(err.message);
+			
+			gameConfig.sound.useSound = false;
+        }
+    }
+};
+
+var game = new GhostHunterGame();
+
+</script>
+
+<script type="text/javascript">
+    jQuery.urlParam = function (name) {
+        var results = new RegExp('[\\?&amp;]' + name + '=([^&amp;#]*)').exec(window.location.href);
+        return results[1] || 0;
+    };
+
+    if (typeof(game) != 'undefined') {
+        deviceOrientationHandler =  game.engine.onGyroEvent;
+
+        // visibility (start)
+        var hidden, visibilityState, visibilityChange;
+
+        (function() {
+            if (typeof document.mozHidden !== "undefined") {
+                hidden = "mozHidden", visibilityChange = "mozvisibilitychange", visibilityState = "mozVisibilityState";
+            }
+            else if (typeof document.msHidden !== "undefined") {
+                hidden = "msHidden", visibilityChange = "msvisibilitychange", visibilityState = "msVisibilityState";
+            }
+            else if (typeof document.webkitHidden !== "undefined") {
+                hidden = "webkitHidden", visibilityChange = "webkitvisibilitychange", visibilityState = "webkitVisibilityState";
+            }
+            else if (typeof document.hidden !== "undefined") {
+                hidden = "hidden", visibilityChange = "visibilitychange", visibilityState = "visibilityState";
+            }
+
+            $(window).on('blur',game.stopMusic );
+            $(window).on('focus',game.startMusic );
+
+            // iOS
+            $(window).on('pagehide',game.stopMusic );
+            $(window).on('pageshow',game.startMusic );
+
+            // IE 9 and lower:
+            $(window).on('focusout',game.stopMusic );
+            $(window).on('focusin',game.startMusic );
+
+            document.addEventListener(visibilityChange, function() {
+                switch (document[visibilityState]) {
+                    case "visible":
+                        game.startMusic();
+                        break;
+                    case "hidden":
+                        game.stopMusic();
+                        break;
+                }
+            });
+        })();
+    }
+    // visibility (end)
+
+
+    function simulateGeoStatic() {
+
+        evtData1 = {
+            "alpha": 100, "beta": 8, "gamma": -30
+        }
+
+        if (typeof(game) != 'undefined') {
+            deviceOrientationHandler(evtData1);
+            setTimeout(game.engine.onTick,1000);
+        }
+
+    }
+
+</script>
+
+</body>
+</html>

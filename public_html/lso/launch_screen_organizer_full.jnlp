@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp
+      spec="1.0+"
+      codebase="http://www.kiuansoft.com/lso/"
+      href="http://www.kiuansoft.com/lso/launch_screen_organizer_full.jnlp">
+    <information>
+        <title>Launch Screen Organizer</title>
+        <vendor>KiuanSoft, Inc.</vendor>
+        <homepage href="lso.html"/>
+        <description>Manage your Android home screens using your computer!</description>
+        <description kind="short">
+            Manage your Android home screens using your computer.
+        </description>
+        <icon href="lso.jpg"/>
+        <!--<icon kind="splash" href="relative/splash.jpg"/>-->
+        <offline-allowed/>
+        <shortcut online="false">
+            <desktop/>
+            <menu submenu="KiuanSoft, Inc."/>
+        </shortcut>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <!-- Application Resources -->
+        <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se" java-vm-args=""/>
+        <jar href="lso_full.jar" main="true" />
+        <jar href="TableLayout-bin-jdk1.5-2009-08-26.jar"/>
+    </resources>
+
+    <application-desc name="Launch Screen Organizer Client Application" main-class="com.px3j.lso.ui.LaunchOrganizerApplication"/>
+    <update check="background"/>
+</jnlp>
